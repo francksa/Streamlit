@@ -30,20 +30,34 @@ st.markdown("""
 # -----------------------------
 @st.cache_data
 def load_and_clean_data():
-    raw = pd.read_csv(RAW_DATA_PATH)
-    
-    # Map RS8_1_1NET through RS8_17_1NET (1=Selected, 2=Not Selected)
-    # Convert to binary 1/0 for easier math
+    try:
+        # 1. Added engine='python' (more flexible than the C engine)
+        # 2. Added on_bad_lines='skip' to bypass the broken rows
+        # 3. Added low_memory=False to handle mixed data types in large files
+        raw = pd.read_csv(
+            RAW_DATA_PATH, 
+            engine='python', 
+            on_bad_lines='skip', 
+            low_memory=False
+        )
+    except Exception as e:
+        st.error(f"Error loading CSV: {e}")
+        return pd.DataFrame(), []
+
+    # Map RS8_1_1NET through RS8_17_1NET
     cep_cols = [f"RS8_{i}_1NET" for i in range(1, 18)]
-    target_cols = cep_cols + ["RS8mpen_1"]
     
-    for col in target_cols:
+    # Check if columns actually exist before trying to convert
+    available_cep_cols = [c for c in cep_cols if c in raw.columns]
+    
+    for col in available_cep_cols + ["RS8mpen_1"]:
         if col in raw.columns:
+            # Handle potential strings/NaNs in the column before conversion
+            raw[col] = pd.to_numeric(raw[col], errors='coerce').fillna(0)
             raw[col] = np.where(raw[col] == 1, 1, 0)
     
-    # Filter for respondents with valid weights
     raw = raw.dropna(subset=['wts'])
-    return raw, cep_cols
+    return raw, available_cep_cols
 
 raw, cep_cols = load_and_clean_data()
 
