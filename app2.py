@@ -15,7 +15,7 @@ import altair as alt
 # 1. Configuration & Assumptions
 # -----------------------------
 TFM_HOUSEHOLDS = 70_132_819
-RAW_DATA_PATH = "2510110_research_science_raw_data.csv"
+RAW_DATA_PATH = "https://github.com/francksa/Streamlit/blob/main/2510110_research_science_raw_data.csv"
 
 st.set_page_config(page_title="TFM Mental Availability Simulator", layout="wide")
 st.title("TFM Mental Availability & TAM Simulator")
