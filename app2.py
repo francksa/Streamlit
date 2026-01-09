@@ -16,7 +16,7 @@ RAW_DATA_DEFAULT_NAMES = [
 # Household base for 22-state footprint (2023)
 HOUSEHOLD_BASE_TFM_STATES = 70_132_819
 
-# MSA filter: 1 = in TFM-present MSA universe
+# Geography filter: 1 = in TFM-present MSA universe
 MSA_FILTER_COL = "xdemAud1"
 MSA_FILTER_VALUE = 1
 
@@ -30,9 +30,7 @@ DEFAULT_CAP = 0.90
 APP_DIR = Path(__file__).parent
 
 # ============================================================
-# CEP NAME MAP (from your dashboard / workbook)
-# Assumption (as you stated): RS1_1NET corresponds to "Doing my regular weekly grocery shopping", etc.
-# Edit wording here if you want it to match your dashboard text exactly.
+# CEP NAME MAP (match your dashboard)
 # ============================================================
 CEP_NAME_MAP = {
     1: "Doing my regular weekly grocery shopping",
@@ -54,7 +52,6 @@ CEP_NAME_MAP = {
     17: "Needing help or ideas on what to buy",
 }
 
-# Optional CEP type categorization (for bubble colors)
 def infer_cep_type(label: str) -> str:
     s = label.lower()
     routine_kw = ["weekly", "regular", "save money", "low on supplies", "planning", "errands"]
@@ -62,19 +59,12 @@ def infer_cep_type(label: str) -> str:
     convenience_kw = ["short on time", "convenient", "ready-to-eat", "pickup", "online", "crowded", "long lines", "avoid"]
     inspiration_kw = ["inspired", "try something new", "new or seasonal", "seasonal", "hosting", "special meal", "ideas", "help"]
     specialty_kw = ["specialty", "international", "large family", "group"]
-
-    if any(k in s for k in routine_kw):
-        return "Routine"
-    if any(k in s for k in health_kw):
-        return "Health"
-    if any(k in s for k in convenience_kw):
-        return "Convenience"
-    if any(k in s for k in inspiration_kw):
-        return "Inspiration"
-    if any(k in s for k in specialty_kw):
-        return "Specialty"
+    if any(k in s for k in routine_kw): return "Routine"
+    if any(k in s for k in health_kw): return "Health"
+    if any(k in s for k in convenience_kw): return "Convenience"
+    if any(k in s for k in inspiration_kw): return "Inspiration"
+    if any(k in s for k in specialty_kw): return "Specialty"
     return "Other"
-
 
 # ============================================================
 # Utilities
@@ -86,29 +76,23 @@ def wmean(x: np.ndarray, w: np.ndarray) -> float:
 def to_binary_selected(series: pd.Series) -> np.ndarray:
     """
     Convert 1=Selected, 2=Not Selected (and NaN -> Not Selected) to 0/1.
-    IMPORTANT: This is correct for RS1 (prevalence) and RS8 grids.
     """
     s = series.fillna(2)
     return (s.astype(float) == 1.0).astype(int).to_numpy()
 
 
 def load_csv_from_repo_or_upload(label: str, default_names: list[str], required: bool = True):
-    """
-    Tries to load from repo; otherwise falls back to uploader.
-    """
     for name in default_names:
         p = APP_DIR / name
         if p.exists():
             st.sidebar.success(f"{label}: loaded from repo ({p.name})")
             return pd.read_csv(p, low_memory=False)
-
     uploaded = st.sidebar.file_uploader(label, type=["csv"])
     if uploaded is None:
         if required:
             st.sidebar.warning(f"Please upload: {label}")
             st.stop()
         return None
-
     st.sidebar.success(f"{label}: uploaded")
     return pd.read_csv(uploaded, low_memory=False)
 
@@ -122,11 +106,6 @@ def apply_msa_filter(raw: pd.DataFrame, use_msa_only: bool) -> pd.DataFrame:
 
 
 def discover_ceps(raw: pd.DataFrame):
-    """
-    Find CEP indices i where BOTH exist:
-      - RS1_{i}NET  (category prevalence item)
-      - RS8_{i}_1NET (TFM association for CEP i; brand 1 = TFM)
-    """
     cep_idx = []
     for col in raw.columns:
         m = re.match(r"RS1_(\d+)NET$", str(col))
@@ -136,28 +115,37 @@ def discover_ceps(raw: pd.DataFrame):
                 cep_idx.append(i)
     cep_idx = sorted(set(cep_idx))
     if not cep_idx:
-        raise ValueError("No CEPs found. Expected columns like RS1_iNET and RS8_i_1NET.")
+        raise ValueError("No CEPs found. Expected RS1_iNET and RS8_i_1NET.")
     return cep_idx
 
 
-def conditional_share_raw(x_col: np.ndarray, cep_col: np.ndarray) -> float:
+def rs8_asked_mask(series: pd.Series) -> pd.Series:
     """
-    Raw salience = P(TFM | CEP) among CEP-doers only.
+    True where respondent was asked the RS8 item and gave a coded response (1 or 2).
     """
-    mask = (cep_col == 1)
-    if mask.sum() == 0:
-        return 0.0
-    return float(x_col[mask].mean())
+    return series.notna() & series.isin([1, 2])
 
 
-def conditional_share_wtd(x_col: np.ndarray, cep_col: np.ndarray, w: np.ndarray) -> float:
+def salience_raw_dashboard(rs8_series: pd.Series) -> float:
     """
-    Weighted salience = P(TFM | CEP) among CEP-doers only (weights applied within mask).
+    RAW dashboard-aligned salience = % selecting TFM among respondents who were asked (RS8 present).
     """
-    mask = (cep_col == 1)
+    mask = rs8_asked_mask(rs8_series)
     if mask.sum() == 0:
         return 0.0
-    return wmean(x_col[mask], w[mask])
+    return float((rs8_series[mask] == 1).mean())
+
+
+def salience_wtd_dashboard(rs8_series: pd.Series, w: pd.Series) -> float:
+    """
+    Weighted version of the same: among asked respondents only.
+    """
+    mask = rs8_asked_mask(rs8_series)
+    if mask.sum() == 0:
+        return 0.0
+    x = (rs8_series[mask] == 1).astype(int).to_numpy()
+    ww = w[mask].to_numpy()
+    return wmean(x, ww)
 
 
 def simulate_unique_reach(
@@ -169,13 +157,6 @@ def simulate_unique_reach(
     cap: float,
     seed: int = 7,
 ):
-    """
-    Respondent-level Monte Carlo with weights + true deduplication.
-
-    NOTE:
-    - salience_current_w is WEIGHTED and conditional on CEP-doers.
-    - We treat uplift as moving the conditional salience for that CEP among CEP-doers.
-    """
     rng = np.random.default_rng(seed)
 
     uplift = uplifts_pts / 100.0
@@ -191,13 +172,12 @@ def simulate_unique_reach(
 
     n, k = X.shape
     reach_dist = np.zeros(n_sims, dtype=float)
+    non = (X == 0)
 
     for t in range(n_sims):
         X_sim = X.copy()
-
-        # Flip only among current non-selectors within EACH CEP column
         U = rng.random((n, k))
-        flips = (U < flip_prob) & (X_sim == 0)
+        flips = (U < flip_prob) & non
         X_sim[flips] = 1
 
         # Dedup: any CEP selected for TFM
@@ -208,26 +188,20 @@ def simulate_unique_reach(
 
 
 # ============================================================
-# Streamlit App
+# App
 # ============================================================
 def main():
-    st.set_page_config(page_title="TFM CEP Simulator (Raw UI, Weighted Engine)", layout="wide")
-    st.title("TFM CEP Simulator — Raw Dashboard UI, Weighted + Deduped Engine")
+    st.set_page_config(page_title="TFM CEP Simulator (Dashboard-aligned RAW)", layout="wide")
+    st.title("TFM CEP Simulator — Dashboard-aligned RAW UI, Weighted + Deduped Engine")
 
     st.markdown(
         """
-**What you see (UI):** Raw (unweighted) *conditional* associations that match your dashboard  
-- Category prevalence: \(P(CEP)\)  
-- TFM salience: \(P(TFM \\mid CEP)\) among CEP-doers
-
-**What the simulator uses (engine):** Weighted + deduped Monte Carlo  
-- Scenario HH impact is overlap-safe and population-scaled.
+**Why your raw %s now match the dashboard:**  
+The brand-association matrix is effectively measured on a **TFM-eligible base** (respondents who were asked the TFM column).  
+So salience is calculated as **% selecting TFM among those asked** (RS8 coded 1/2), not diluted by blanks.
 """
     )
 
-    # ----------------------------
-    # Sidebar: data inputs
-    # ----------------------------
     st.sidebar.header("Data inputs")
     raw_all = load_csv_from_repo_or_upload("Raw data CSV", RAW_DATA_DEFAULT_NAMES, required=True)
 
@@ -235,26 +209,42 @@ def main():
         st.error(f"Missing required column: {WEIGHT_COL}")
         st.stop()
 
-    # ----------------------------
-    # Universe controls
-    # ----------------------------
     st.sidebar.header("Universe controls")
     use_msa_only = st.sidebar.checkbox(
         f"Use TFM-present MSAs only ({MSA_FILTER_COL}=={MSA_FILTER_VALUE})",
         value=True
     )
 
-    try:
-        raw = apply_msa_filter(raw_all, use_msa_only)
-    except Exception as e:
-        st.error(str(e))
-        st.stop()
+    raw_geo = apply_msa_filter(raw_all, use_msa_only)
 
-    # Suggested HH base for selected universe (scale from 22-state HH base)
-    w_all_sum = float(raw_all[WEIGHT_COL].sum())
-    w_sel_sum = float(raw[WEIGHT_COL].sum())
-    share_in_universe = (w_sel_sum / w_all_sum) if w_all_sum > 0 else 1.0
-    hh_base_suggested = int(round(HOUSEHOLD_BASE_TFM_STATES * share_in_universe))
+    # Discover CEPs
+    cep_idx = discover_ceps(raw_geo)
+    labels = {i: CEP_NAME_MAP.get(i, f"CEP {i}") for i in cep_idx}
+    k = len(cep_idx)
+
+    # -------------------------------------------------------------------
+    # IMPORTANT: define the TFM-eligible base (asked base)
+    # We use RS8 for CEP1 as a proxy: if you were asked once, you’re in the matrix base.
+    # This works because in your file, RS8 and RS8mpen_1 are populated on the same base.
+    # -------------------------------------------------------------------
+    base_proxy_col = f"RS8_{cep_idx[0]}_1NET"
+    asked_base_mask = rs8_asked_mask(raw_geo[base_proxy_col])
+
+    raw = raw_geo[asked_base_mask].copy()
+
+    # Weights
+    w_all = raw_all[WEIGHT_COL].to_numpy()
+    w_geo = raw_geo[WEIGHT_COL].to_numpy()
+    w = raw[WEIGHT_COL].to_numpy()
+
+    # Suggest HH base:
+    # 1) scale 22-state HH base -> selected geography (MSA) using weighted share
+    share_geo = float(w_geo.sum() / w_all.sum()) if w_all.sum() > 0 else 1.0
+    hh_geo = int(round(HOUSEHOLD_BASE_TFM_STATES * share_geo))
+
+    # 2) within selected geography, scale to asked/eligible base
+    share_asked_within_geo = float(raw[WEIGHT_COL].sum() / raw_geo[WEIGHT_COL].sum()) if raw_geo[WEIGHT_COL].sum() > 0 else 1.0
+    hh_asked = int(round(hh_geo * share_asked_within_geo))
 
     if use_msa_only:
         st.success(f"Universe: TFM-present MSAs ({MSA_FILTER_COL}=={MSA_FILTER_VALUE})")
@@ -262,71 +252,51 @@ def main():
         st.info("Universe: Full sample")
 
     st.caption(
-        f"Weighted share in selected universe: **{share_in_universe:.1%}**. "
-        f"Suggested HH base: **{hh_base_suggested:,}** (scaled from {HOUSEHOLD_BASE_TFM_STATES:,} HH in TFM states)."
+        f"Geography share (weighted): **{share_geo:.1%}** → est. HH in geography: **{hh_geo:,}**. "
+        f"TFM-eligible share within geography: **{share_asked_within_geo:.1%}** → est. eligible HH base: **{hh_asked:,}**."
     )
 
-    # ----------------------------
-    # CEP discovery + labeling
-    # ----------------------------
-    cep_idx = discover_ceps(raw)
-    labels = {i: CEP_NAME_MAP.get(i, f"CEP {i}") for i in cep_idx}
-    k = len(cep_idx)
-    st.caption(f"Detected **{k} CEPs** with both RS1 prevalence and RS8 TFM association data in the selected universe.")
-
-    # Build matrices
-    prev_cols = [f"RS1_{i}NET" for i in cep_idx]
-    tfm_cols = [f"RS8_{i}_1NET" for i in cep_idx]
-
-    prev_mat = np.column_stack([to_binary_selected(raw[c]) for c in prev_cols])  # 0/1
-    X = np.column_stack([to_binary_selected(raw[c]) for c in tfm_cols])          # 0/1
-
-    w = raw[WEIGHT_COL].to_numpy()
-
-    # ----------------------------
-    # RAW (dashboard) metrics
-    # ----------------------------
-    prevalence_raw = np.array([prev_mat[:, j].mean() for j in range(k)])  # P(CEP)
-    # conditional raw salience: P(TFM | CEP)
-    salience_raw = np.array([conditional_share_raw(X[:, j], prev_mat[:, j]) for j in range(k)])
-
-    # ----------------------------
-    # WEIGHTED (engine) metrics
-    # ----------------------------
-    prevalence_w = np.array([wmean(prev_mat[:, j], w) for j in range(k)])  # weighted P(CEP)
-    # conditional weighted salience: P(TFM | CEP) among CEP-doers
-    salience_w = np.array([conditional_share_wtd(X[:, j], prev_mat[:, j], w) for j in range(k)])
-
-    # Baseline deduped reach (weighted) – prefer RS8mpen_1 if present
-    if "RS8mpen_1" in raw.columns:
-        mpen = to_binary_selected(raw["RS8mpen_1"])
-        unique_reach_current_w = wmean(mpen, w)
-        # validation from X union
-        mpen_from_x = (X.max(axis=1) > 0).astype(int)
-        unique_reach_from_x_w = wmean(mpen_from_x, w)
-    else:
-        mpen_from_x = (X.max(axis=1) > 0).astype(int)
-        unique_reach_current_w = wmean(mpen_from_x, w)
-        unique_reach_from_x_w = unique_reach_current_w
-
-    # ----------------------------
-    # Sidebar: simulation controls
-    # ----------------------------
     st.sidebar.header("Simulation controls")
     hh_base = st.sidebar.number_input(
-        "Household base (for scaling to HHs)",
-        value=int(hh_base_suggested if use_msa_only else HOUSEHOLD_BASE_TFM_STATES),
+        "Household base (eligible base, for scaling to HHs)",
+        value=int(hh_asked),
         step=100000
     )
     n_sims = st.sidebar.slider("Monte Carlo runs", 200, 3000, DEFAULT_N_SIMS, step=100)
     cap = st.sidebar.slider("Salience cap", 0.50, 0.95, DEFAULT_CAP, step=0.01)
 
-    st.sidebar.subheader("TFM salience uplifts (pts)")
-    st.sidebar.caption("Current salience shown below is RAW and conditional on CEP (matches dashboard).")
+    # RAW category prevalence (still meaningful on eligible base; if you prefer, we can compute prevalence on geo base instead)
+    prevalence_raw = np.array([(raw_geo[f"RS1_{cep}NET"] == 1).mean() for cep in cep_idx])
 
+    # RAW dashboard salience (asked base)
+    salience_raw = np.array([salience_raw_dashboard(raw[f"RS8_{cep}_1NET"]) for cep in cep_idx])
+
+    # Weighted dashboard salience (engine)
+    salience_w = np.array([salience_wtd_dashboard(raw[f"RS8_{cep}_1NET"], raw[WEIGHT_COL]) for cep in cep_idx])
+
+    # Weighted prevalence for TAM sizing (use geo base for prevalence sizing)
+    prevalence_w_geo = np.array([
+        wmean((raw_geo[f"RS1_{cep}NET"] == 1).astype(int).to_numpy(), raw_geo[WEIGHT_COL].to_numpy())
+        for cep in cep_idx
+    ])
+
+    # Build X (no missing now; asked base only)
+    X = np.column_stack([
+        (raw[f"RS8_{cep}_1NET"].astype(float) == 1.0).astype(int).to_numpy()
+        for cep in cep_idx
+    ])
+
+    # Baseline deduped reach (weighted) on eligible base
+    if "RS8mpen_1" in raw.columns:
+        mpen = (raw["RS8mpen_1"] == 1).astype(int).to_numpy()
+        unique_reach_current_w = wmean(mpen, w)
+    else:
+        unique_reach_current_w = wmean((X.max(axis=1) > 0).astype(int), w)
+
+    # Sidebar sliders (RAW only)
+    st.sidebar.subheader("TFM salience uplifts (pts)")
     uplifts = np.zeros(k, dtype=float)
 
-    # order sliders by RAW category prevalence (dashboard-friendly)
     order = np.argsort(-prevalence_raw)
     ordered_ceps = [cep_idx[i] for i in order]
 
@@ -340,9 +310,7 @@ def main():
             step=1,
         )
 
-    # ----------------------------
-    # Simulation (weighted engine)
-    # ----------------------------
+    # Simulate (weighted engine)
     unique_reach_scenario_w, reach_dist_w, salience_target_w = simulate_unique_reach(
         X=X,
         w=w,
@@ -353,7 +321,7 @@ def main():
         seed=7
     )
 
-    # KPIs (scaled to HH base)
+    # KPIs in HH
     unique_hh_current = unique_reach_current_w * hh_base
     unique_hh_scenario = unique_reach_scenario_w * hh_base
     delta_unique_hh = unique_hh_scenario - unique_hh_current
@@ -361,91 +329,57 @@ def main():
     lo = float(np.quantile(reach_dist_w, 0.10)) * hh_base
     hi = float(np.quantile(reach_dist_w, 0.90)) * hh_base
 
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3 = st.columns(3)
     c1.metric("Unique HH Reach (current, deduped)", f"{unique_hh_current:,.0f}")
     c2.metric("Unique HH Reach (scenario, deduped)", f"{unique_hh_scenario:,.0f}", f"{delta_unique_hh:,.0f}")
     c3.metric("Scenario range (P10–P90)", f"{lo:,.0f} – {hi:,.0f}")
-    diff_pp = (unique_reach_from_x_w - unique_reach_current_w) * 100
-    c4.metric("Dedup validation (X vs RS8mpen_1)", f"{diff_pp:+.2f} pp")
 
-    st.caption(
-        "UI %s are RAW (unweighted) and conditional on CEP (dashboard-aligned). "
-        "Scenario math is WEIGHTED + DEDUPED."
-    )
-
-    # ----------------------------
-    # Table (raw-facing, with weighted sizing behind it)
-    # ----------------------------
+    # Table (raw-facing salience, geo-based prevalence for TAM)
     df = pd.DataFrame({
-        "CEP Index": cep_idx,
         "CEP": [labels[i] for i in cep_idx],
         "CEP Type": [infer_cep_type(labels[i]) for i in cep_idx],
-
-        # Dashboard-aligned
-        "Category prevalence (raw %)": prevalence_raw * 100,
-        "TFM salience (raw %, P(TFM|CEP))": salience_raw * 100,
-
-        # Engine transparency (kept, but you can remove these columns if you want)
-        "Category prevalence (wtd %)": prevalence_w * 100,
-        "TFM salience (wtd current %, P(TFM|CEP))": salience_w * 100,
-        "TFM salience (wtd scenario %, P(TFM|CEP))": salience_target_w * 100,
-
+        "Category prevalence (raw %, geo base)": prevalence_raw * 100,
+        "TFM salience (raw %, asked base)": salience_raw * 100,
         "Uplift (pts)": uplifts,
+        "Accessible TAM (HHs, geo)": prevalence_w_geo * hh_geo,
+    }).sort_values("Category prevalence (raw %, geo base)", ascending=False)
 
-        # Household sizing (weighted prevalence × HH base)
-        "Accessible TAM (HHs)": prevalence_w * hh_base,
-
-        # Diagnostic (not deduped)
-        "Brand TAM current (HHs) [diagnostic]": (prevalence_w * salience_w) * hh_base,
-        "Brand TAM scenario (HHs) [diagnostic]": (prevalence_w * salience_target_w) * hh_base,
-        "Δ Brand TAM (HHs) [diagnostic]": ((prevalence_w * salience_target_w) - (prevalence_w * salience_w)) * hh_base,
-    }).sort_values("Category prevalence (raw %)", ascending=False)
-
-    st.subheader("CEP diagnostics")
-    st.caption(
-        "Brand TAM columns are not deduplicated (CEPs overlap by design). "
-        "Top KPI is deduplicated Unique HH Reach."
-    )
+    st.subheader("Dashboard-aligned view")
+    st.caption("Salience is computed on the **asked/eligible base** (matches your dashboard). TAM is sized on the **geo base**.")
     st.dataframe(df, use_container_width=True)
 
-    # ----------------------------
-    # Bubble matrix (RAW axes; WEIGHTED bubble sizes)
-    # ----------------------------
-    st.subheader("CEP Opportunity Bubble Matrix (Scenario)")
-    st.caption(
-        "Axes are RAW % (dashboard-aligned). Bubble size = Accessible TAM (HHs) using weighted prevalence × HH base."
-    )
-
+    # Bubble chart (raw axes, HH sizing)
+    st.subheader("Bubble matrix")
     chart_df = df.copy()
 
     bubble = (
         alt.Chart(chart_df)
         .mark_circle(opacity=0.75)
         .encode(
-            x=alt.X("Category prevalence (raw %)", title="Category prevalence (raw %)"),
-            y=alt.Y("TFM salience (raw %, P(TFM|CEP))", title="TFM salience (raw %, P(TFM|CEP))"),
-            size=alt.Size("Accessible TAM (HHs)", title="Accessible TAM (HHs)", scale=alt.Scale(range=[120, 3200])),
+            x=alt.X("Category prevalence (raw %, geo base)", title="Category prevalence (raw %, geo base)"),
+            y=alt.Y("TFM salience (raw %, asked base)", title="TFM salience (raw %, asked base)"),
+            size=alt.Size("Accessible TAM (HHs, geo)", title="Accessible TAM (HHs)", scale=alt.Scale(range=[120, 3200])),
             color=alt.Color("CEP Type", title="CEP Type"),
             tooltip=[
                 "CEP",
                 "CEP Type",
-                alt.Tooltip("Category prevalence (raw %)", format=".1f"),
-                alt.Tooltip("TFM salience (raw %, P(TFM|CEP))", format=".1f"),
-                alt.Tooltip("Accessible TAM (HHs)", format=",.0f"),
-                alt.Tooltip("Δ Brand TAM (HHs) [diagnostic]", format=",.0f"),
+                alt.Tooltip("Category prevalence (raw %, geo base)", format=".1f"),
+                alt.Tooltip("TFM salience (raw %, asked base)", format=".1f"),
+                alt.Tooltip("Accessible TAM (HHs, geo)", format=",.0f"),
             ],
         )
         .properties(height=520)
     )
 
-    x_med = float(chart_df["Category prevalence (raw %)"].median())
-    y_med = float(chart_df["TFM salience (raw %, P(TFM|CEP))"].median())
+    x_med = float(chart_df["Category prevalence (raw %, geo base)"].median())
+    y_med = float(chart_df["TFM salience (raw %, asked base)"].median())
     vline = alt.Chart(pd.DataFrame({"x": [x_med]})).mark_rule(strokeDash=[4, 4]).encode(x="x")
     hline = alt.Chart(pd.DataFrame({"y": [y_med]})).mark_rule(strokeDash=[4, 4]).encode(y="y")
 
     st.altair_chart(bubble + vline + hline, use_container_width=True)
-    st.caption(f"Dotted lines are medians (raw): x={x_med:.1f}%, y={y_med:.1f}%.")
+    st.caption(f"Dotted lines are medians: x={x_med:.1f}%, y={y_med:.1f}%.")
 
 
 if __name__ == "__main__":
     main()
+
