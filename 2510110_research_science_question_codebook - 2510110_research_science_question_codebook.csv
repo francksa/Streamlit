@@ -1,0 +1,509 @@
+qid,qidFull
+ResponseID,NO TEXT
+xdemAll,NO TEXT
+demZIP,What is your five-digit ZIP Code?
+xdemGender,Post survey demographic for gender
+age,Four part age demographic for US
+demAgeGeneration,NO TEXT
+xpid3,Political party affiliation without leaning
+xpidGender,Political party identification combined with gender
+xdemIdeo3,Political ideology recode to three groups
+xeduc3,Classification of education into three categories
+xdemInc3_us,Three tiered income demographic for the US
+xdemWhite,Binary variable indicating if respondent is White
+xdemHispBin,Binary variable indicating if respondent is Hispanic
+demBlackBin,Binary variable indicating if respondent is Black
+demRaceOther,Binary variable indicating if respondent belongs to another ethnicity
+xdemReligion,Variable categorizing respondents based on their religious affiliation
+xdemReligOther,Variable indicating if the respondent is a religious non-Protestant/Catholic
+xdemUsr,Variable categorizing respondents based on their community type
+xdemEmploy,Employment status with revised categories
+xdemMilHH1,Variable indicating if the respondent belongs to a military household
+xsubVote24O,2024 US Presidental Vote recode with additional level for non-voters
+xreg4,"Variable categorizing respondents based on the 4-region US division their state falls into, aggregated from the 9 regions in xdiv9"
+RSxdem1,The Fresh Market Users
+RSxdem2,MOM's Organic Market Users
+RSxdem3,Whole Foods Market Users
+RSxdem4,Sprouts Farmers Market Users
+RSxdem5,Trader Joe's Users
+RSxdem6,Publix Super Markets Users
+RSxdem7,Wegmans Users
+RSxdem8,Walmart Users
+RSxdem9,Target Users
+RSxdem10,Aldi Users
+RSxdem11,Costco Users
+RSxdem12,Kroger Users
+RSxdem13,Albertsons Users
+RSxdem14,Sam's Club Users
+RSxdem21,The Fresh Market Non-Users
+RSxdem22,MOM's Organic Market Non-Users
+RSxdem23,Whole Foods Market Non-Users
+RSxdem24,Sprouts Farmers Market Non-Users
+RSxdem25,Trader Joe's Non-Users
+RSxdem26,Publix Super Markets Non-Users
+RSxdem27,Wegmans Non-Users
+RSxdem28,Walmart Non-Users
+RSxdem29,Target Non-Users
+RSxdem30,Aldi Non-Users
+RSxdem31,Costco Non-Users
+RSxdem32,Kroger Non-Users
+RSxdem33,Albertsons Non-Users
+RSxdem34,Sam's Club Non-Users
+RSxdem41,The Fresh Market Light Users
+RSxdem42,MOM's Organic Market Light Users
+RSxdem43,Whole Foods Market Light Users
+RSxdem44,Sprouts Farmers Market Light Users
+RSxdem45,Trader Joe's Light Users
+RSxdem46,Publix Super Markets Light Users
+RSxdem47,Wegmans Light Users
+RSxdem48,Walmart Light Users
+RSxdem49,Target Light Users
+RSxdem50,Aldi Light Users
+RSxdem51,Costco Light Users
+RSxdem52,Kroger Light Users
+RSxdem53,Albertsons Light Users
+RSxdem54,Sam's Club Light Users
+category_usage_high,Category Usage: High
+category_usage_medium,Category Usage: Medium
+category_usage_low,Category Usage: Low
+brand_usage_high,Brand Usage: High
+brand_usage_medium,Brand Usage: Medium
+brand_usage_low,Brand Usage: Low/None
+xdemAud1,MSA in select stores list
+xdemAud2,MSA not in select stores list
+RSdem1_1,How likely are you to make purchases in each of the following categories in the future? --- Beauty
+RSdem1_2,How likely are you to make purchases in each of the following categories in the future? --- Groceries
+RSdem1_3,How likely are you to make purchases in each of the following categories in the future? --- Household cleaning supplies
+RSdem1_4,How likely are you to make purchases in each of the following categories in the future? --- Alcoholic and/or low/no alcohol beverages
+RSdem1_5,"How likely are you to make purchases in each of the following categories in the future? --- Mass merchandiser products (i.e., Walmart, Target)"
+RSdem1_6,"How likely are you to make purchases in each of the following categories in the future? --- Department store retail (i.e. JCPenney, Macy's)"
+RSdem1_7,"How likely are you to make purchases in each of the following categories in the future? --- Convenience store products (i.e. CVS, Walgreens)"
+RSdem1_8,"How likely are you to make purchases in each of the following categories in the future? --- Online retailer products (i.e. Amazon, brand websites)"
+RSdem2a,How often do you purchase groceries?
+RS1_1NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Doing my regular weekly grocery shopping
+RS1_2NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Hosting guests or preparing for a special meal
+RS1_3NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Planning meals and realizing I'm low on supplies
+RS1_4NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Looking for healthy or better-quality food options
+RS1_5NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Buying ready-to-eat meals to save time
+RS1_6NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Trying to save money on groceries
+RS1_7NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Wanting to try new or seasonal products
+RS1_8NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Avoiding crowded stores or long lines
+RS1_9NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Shopping for a large family or group
+RS1_10NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Buying groceries online or for pickup
+RS1_11NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Needing help or ideas on what to buy
+RS1_12NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Looking for specialty or international foods
+RS1_13NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Feeling health-conscious and wanting to eat better
+RS1_14NET,"In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Short on time but wanting convenient, good food"
+RS1_15NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Feeling inspired to cook or try something new
+RS1_16NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Choosing environmentally friendly grocery options
+RS1_17NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- Running other errands and picking up groceries too
+RS1_18NET,In which of the following situations do you most commonly consider purchasing groceries? Please select all that apply. --- None of these
+RS3_1NET,Which of the following grocery stores have you heard of? Please select all that apply. --- The Fresh Market
+RS3_2NET,Which of the following grocery stores have you heard of? Please select all that apply. --- MOM's Organic Market
+RS3_3NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Whole Foods Market
+RS3_4NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Sprouts Farmers Market
+RS3_5NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Trader Joe's
+RS3_6NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Publix Super Markets
+RS3_7NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Wegmans
+RS3_8NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Walmart
+RS3_9NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Target
+RS3_10NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Aldi
+RS3_11NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Costco
+RS3_12NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Kroger
+RS3_13NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Albertsons
+RS3_14NET,Which of the following grocery stores have you heard of? Please select all that apply. --- Sam's Club
+RS3_15NET,Which of the following grocery stores have you heard of? Please select all that apply. --- None of these
+RS4_1,"When, if ever, did you last purchase from each of the following grocery stores? --- The Fresh Market"
+RS4_2,"When, if ever, did you last purchase from each of the following grocery stores? --- MOM's Organic Market"
+RS4_3,"When, if ever, did you last purchase from each of the following grocery stores? --- Whole Foods Market"
+RS4_4,"When, if ever, did you last purchase from each of the following grocery stores? --- Sprouts Farmers Market"
+RS4_5,"When, if ever, did you last purchase from each of the following grocery stores? --- Trader Joe's"
+RS4_6,"When, if ever, did you last purchase from each of the following grocery stores? --- Publix Super Markets"
+RS4_7,"When, if ever, did you last purchase from each of the following grocery stores? --- Wegmans"
+RS4_8,"When, if ever, did you last purchase from each of the following grocery stores? --- Walmart"
+RS4_9,"When, if ever, did you last purchase from each of the following grocery stores? --- Target"
+RS4_10,"When, if ever, did you last purchase from each of the following grocery stores? --- Aldi"
+RS4_11,"When, if ever, did you last purchase from each of the following grocery stores? --- Costco"
+RS4_12,"When, if ever, did you last purchase from each of the following grocery stores? --- Kroger"
+RS4_13,"When, if ever, did you last purchase from each of the following grocery stores? --- Albertsons"
+RS4_14,"When, if ever, did you last purchase from each of the following grocery stores? --- Sam's Club"
+RS5_1,How likely are you to purchase groceries from the following brands in the next year? --- The Fresh Market
+RS5_2,How likely are you to purchase groceries from the following brands in the next year? --- MOM's Organic Market
+RS5_3,How likely are you to purchase groceries from the following brands in the next year? --- Whole Foods Market
+RS5_4,How likely are you to purchase groceries from the following brands in the next year? --- Sprouts Farmers Market
+RS5_5,How likely are you to purchase groceries from the following brands in the next year? --- Trader Joe's
+RS5_6,How likely are you to purchase groceries from the following brands in the next year? --- Publix Super Markets
+RS5_7,How likely are you to purchase groceries from the following brands in the next year? --- Wegmans
+RS5_8,How likely are you to purchase groceries from the following brands in the next year? --- Walmart
+RS5_9,How likely are you to purchase groceries from the following brands in the next year? --- Target
+RS5_10,How likely are you to purchase groceries from the following brands in the next year? --- Aldi
+RS5_11,How likely are you to purchase groceries from the following brands in the next year? --- Costco
+RS5_12,How likely are you to purchase groceries from the following brands in the next year? --- Kroger
+RS5_13,How likely are you to purchase groceries from the following brands in the next year? --- Albertsons
+RS5_14,How likely are you to purchase groceries from the following brands in the next year? --- Sam's Club
+RS7a,"How much do you feel connected — or disconnected — from The Fresh Market as a brand? Don't overthink it, just indicate which representation feels right."
+RS7b,"How much do you feel connected — or disconnected — from Mom's Organic Market as a brand? Don't overthink it, just indicate which representation feels right."
+RS7c,"How much do you feel connected — or disconnected — from Whole Foods Market as a brand? Don't overthink it, just indicate which representation feels right."
+RS7d,"How much do you feel connected — or disconnected — from Sprouts Farmers Market as a brand? Don't overthink it, just indicate which representation feels right."
+RS7e,"How much do you feel connected — or disconnected — from Trader Joe's as a brand? Don't overthink it, just indicate which representation feels right."
+RS7f,"How much do you feel connected — or disconnected — from Publix as a brand? Don't overthink it, just indicate which representation feels right."
+RS7g,"How much do you feel connected — or disconnected — from Wegmans as a brand? Don't overthink it, just indicate which representation feels right."
+RS7h,"How much do you feel connected — or disconnected — from Walmart as a brand? Don't overthink it, just indicate which representation feels right."
+RS7i,"How much do you feel connected — or disconnected — from Target as a brand? Don't overthink it, just indicate which representation feels right."
+RS7j,"How much do you feel connected — or disconnected — from Aldi as a brand? Don't overthink it, just indicate which representation feels right."
+RS7k,"How much do you feel connected — or disconnected — from Costco as a brand? Don't overthink it, just indicate which representation feels right."
+RS7l,"How much do you feel connected — or disconnected — from Kroger as a brand? Don't overthink it, just indicate which representation feels right."
+RS7m,"How much do you feel connected — or disconnected — from Albertsons as a brand? Don't overthink it, just indicate which representation feels right."
+RS7n,"How much do you feel connected — or disconnected — from Sam's Club as a brand? Don't overthink it, just indicate which representation feels right."
+RS8_1_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- The Fresh Market"
+RS8_1_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Mom's Organic Market"
+RS8_1_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Whole Foods Market"
+RS8_1_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Sprouts Farmers Market"
+RS8_1_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Trader Joe's"
+RS8_1_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Publix"
+RS8_1_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Wegmans"
+RS8_1_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Walmart"
+RS8_1_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Target"
+RS8_1_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Aldi"
+RS8_1_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Costco"
+RS8_1_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Kroger"
+RS8_1_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Albertsons"
+RS8_1_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- Sam's Club"
+RS8_1_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Doing my regular weekly grocery shopping --- None of these"
+RS8_2_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- The Fresh Market"
+RS8_2_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Mom's Organic Market"
+RS8_2_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Whole Foods Market"
+RS8_2_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Sprouts Farmers Market"
+RS8_2_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Trader Joe's"
+RS8_2_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Publix"
+RS8_2_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Wegmans"
+RS8_2_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Walmart"
+RS8_2_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Target"
+RS8_2_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Aldi"
+RS8_2_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Costco"
+RS8_2_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Kroger"
+RS8_2_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Albertsons"
+RS8_2_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- Sam's Club"
+RS8_2_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Hosting guests or preparing for a special meal --- None of these"
+RS8_3_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- The Fresh Market"
+RS8_3_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Mom's Organic Market"
+RS8_3_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Whole Foods Market"
+RS8_3_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Sprouts Farmers Market"
+RS8_3_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Trader Joe's"
+RS8_3_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Publix"
+RS8_3_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Wegmans"
+RS8_3_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Walmart"
+RS8_3_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Target"
+RS8_3_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Aldi"
+RS8_3_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Costco"
+RS8_3_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Kroger"
+RS8_3_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Albertsons"
+RS8_3_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- Sam's Club"
+RS8_3_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Planning meals and realizing I'm low on supplies --- None of these"
+RS8_4_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- The Fresh Market"
+RS8_4_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Mom's Organic Market"
+RS8_4_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Whole Foods Market"
+RS8_4_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Sprouts Farmers Market"
+RS8_4_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Trader Joe's"
+RS8_4_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Publix"
+RS8_4_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Wegmans"
+RS8_4_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Walmart"
+RS8_4_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Target"
+RS8_4_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Aldi"
+RS8_4_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Costco"
+RS8_4_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Kroger"
+RS8_4_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Albertsons"
+RS8_4_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- Sam's Club"
+RS8_4_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for healthy or better-quality food options --- None of these"
+RS8_5_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- The Fresh Market"
+RS8_5_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Mom's Organic Market"
+RS8_5_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Whole Foods Market"
+RS8_5_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Sprouts Farmers Market"
+RS8_5_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Trader Joe's"
+RS8_5_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Publix"
+RS8_5_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Wegmans"
+RS8_5_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Walmart"
+RS8_5_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Target"
+RS8_5_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Aldi"
+RS8_5_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Costco"
+RS8_5_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Kroger"
+RS8_5_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Albertsons"
+RS8_5_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- Sam's Club"
+RS8_5_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying ready-to-eat meals to save time --- None of these"
+RS8_6_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- The Fresh Market"
+RS8_6_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Mom's Organic Market"
+RS8_6_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Whole Foods Market"
+RS8_6_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Sprouts Farmers Market"
+RS8_6_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Trader Joe's"
+RS8_6_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Publix"
+RS8_6_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Wegmans"
+RS8_6_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Walmart"
+RS8_6_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Target"
+RS8_6_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Aldi"
+RS8_6_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Costco"
+RS8_6_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Kroger"
+RS8_6_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Albertsons"
+RS8_6_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- Sam's Club"
+RS8_6_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Trying to save money on groceries --- None of these"
+RS8_7_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- The Fresh Market"
+RS8_7_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Mom's Organic Market"
+RS8_7_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Whole Foods Market"
+RS8_7_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Sprouts Farmers Market"
+RS8_7_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Trader Joe's"
+RS8_7_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Publix"
+RS8_7_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Wegmans"
+RS8_7_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Walmart"
+RS8_7_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Target"
+RS8_7_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Aldi"
+RS8_7_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Costco"
+RS8_7_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Kroger"
+RS8_7_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Albertsons"
+RS8_7_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- Sam's Club"
+RS8_7_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Wanting to try new or seasonal products --- None of these"
+RS8_8_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- The Fresh Market"
+RS8_8_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Mom's Organic Market"
+RS8_8_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Whole Foods Market"
+RS8_8_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Sprouts Farmers Market"
+RS8_8_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Trader Joe's"
+RS8_8_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Publix"
+RS8_8_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Wegmans"
+RS8_8_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Walmart"
+RS8_8_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Target"
+RS8_8_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Aldi"
+RS8_8_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Costco"
+RS8_8_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Kroger"
+RS8_8_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Albertsons"
+RS8_8_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- Sam's Club"
+RS8_8_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Avoiding crowded stores or long lines --- None of these"
+RS8_9_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- The Fresh Market"
+RS8_9_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Mom's Organic Market"
+RS8_9_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Whole Foods Market"
+RS8_9_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Sprouts Farmers Market"
+RS8_9_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Trader Joe's"
+RS8_9_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Publix"
+RS8_9_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Wegmans"
+RS8_9_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Walmart"
+RS8_9_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Target"
+RS8_9_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Aldi"
+RS8_9_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Costco"
+RS8_9_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Kroger"
+RS8_9_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Albertsons"
+RS8_9_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- Sam's Club"
+RS8_9_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Shopping for a large family or group --- None of these"
+RS8_10_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- The Fresh Market"
+RS8_10_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Mom's Organic Market"
+RS8_10_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Whole Foods Market"
+RS8_10_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Sprouts Farmers Market"
+RS8_10_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Trader Joe's"
+RS8_10_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Publix"
+RS8_10_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Wegmans"
+RS8_10_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Walmart"
+RS8_10_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Target"
+RS8_10_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Aldi"
+RS8_10_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Costco"
+RS8_10_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Kroger"
+RS8_10_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Albertsons"
+RS8_10_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- Sam's Club"
+RS8_10_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Buying groceries online or for pickup --- None of these"
+RS8_11_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- The Fresh Market"
+RS8_11_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Mom's Organic Market"
+RS8_11_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Whole Foods Market"
+RS8_11_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Sprouts Farmers Market"
+RS8_11_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Trader Joe's"
+RS8_11_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Publix"
+RS8_11_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Wegmans"
+RS8_11_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Walmart"
+RS8_11_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Target"
+RS8_11_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Aldi"
+RS8_11_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Costco"
+RS8_11_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Kroger"
+RS8_11_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Albertsons"
+RS8_11_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- Sam's Club"
+RS8_11_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Needing help or ideas on what to buy --- None of these"
+RS8_12_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- The Fresh Market"
+RS8_12_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Mom's Organic Market"
+RS8_12_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Whole Foods Market"
+RS8_12_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Sprouts Farmers Market"
+RS8_12_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Trader Joe's"
+RS8_12_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Publix"
+RS8_12_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Wegmans"
+RS8_12_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Walmart"
+RS8_12_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Target"
+RS8_12_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Aldi"
+RS8_12_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Costco"
+RS8_12_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Kroger"
+RS8_12_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Albertsons"
+RS8_12_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- Sam's Club"
+RS8_12_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Looking for specialty or international foods --- None of these"
+RS8_13_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- The Fresh Market"
+RS8_13_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Mom's Organic Market"
+RS8_13_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Whole Foods Market"
+RS8_13_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Sprouts Farmers Market"
+RS8_13_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Trader Joe's"
+RS8_13_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Publix"
+RS8_13_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Wegmans"
+RS8_13_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Walmart"
+RS8_13_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Target"
+RS8_13_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Aldi"
+RS8_13_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Costco"
+RS8_13_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Kroger"
+RS8_13_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Albertsons"
+RS8_13_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- Sam's Club"
+RS8_13_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling health-conscious and wanting to eat better --- None of these"
+RS8_14_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- The Fresh Market"
+RS8_14_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Mom's Organic Market"
+RS8_14_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Whole Foods Market"
+RS8_14_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Sprouts Farmers Market"
+RS8_14_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Trader Joe's"
+RS8_14_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Publix"
+RS8_14_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Wegmans"
+RS8_14_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Walmart"
+RS8_14_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Target"
+RS8_14_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Aldi"
+RS8_14_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Costco"
+RS8_14_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Kroger"
+RS8_14_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Albertsons"
+RS8_14_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- Sam's Club"
+RS8_14_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Short on time but wanting convenient, good food --- None of these"
+RS8_15_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- The Fresh Market"
+RS8_15_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Mom's Organic Market"
+RS8_15_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Whole Foods Market"
+RS8_15_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Sprouts Farmers Market"
+RS8_15_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Trader Joe's"
+RS8_15_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Publix"
+RS8_15_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Wegmans"
+RS8_15_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Walmart"
+RS8_15_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Target"
+RS8_15_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Aldi"
+RS8_15_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Costco"
+RS8_15_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Kroger"
+RS8_15_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Albertsons"
+RS8_15_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- Sam's Club"
+RS8_15_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Feeling inspired to cook or try something new --- None of these"
+RS8_16_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- The Fresh Market"
+RS8_16_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Mom's Organic Market"
+RS8_16_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Whole Foods Market"
+RS8_16_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Sprouts Farmers Market"
+RS8_16_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Trader Joe's"
+RS8_16_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Publix"
+RS8_16_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Wegmans"
+RS8_16_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Walmart"
+RS8_16_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Target"
+RS8_16_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Aldi"
+RS8_16_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Costco"
+RS8_16_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Kroger"
+RS8_16_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Albertsons"
+RS8_16_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- Sam's Club"
+RS8_16_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Choosing environmentally friendly grocery options --- None of these"
+RS8_17_1NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- The Fresh Market"
+RS8_17_2NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Mom's Organic Market"
+RS8_17_3NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Whole Foods Market"
+RS8_17_4NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Sprouts Farmers Market"
+RS8_17_5NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Trader Joe's"
+RS8_17_6NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Publix"
+RS8_17_7NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Wegmans"
+RS8_17_8NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Walmart"
+RS8_17_9NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Target"
+RS8_17_10NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Aldi"
+RS8_17_11NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Costco"
+RS8_17_12NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Kroger"
+RS8_17_13NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Albertsons"
+RS8_17_14NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- Sam's Club"
+RS8_17_15NET,"For each of the following situations, please indicate which grocery stores you would consider visiting. Please select all that apply. --- Running other errands and picking up groceries too --- None of these"
+RS8mmstertile_1,The Fresh Market Mental Market Share Tertiles
+RS8mmstertile_2,Mom's Organic Market Mental Market Share Tertiles
+RS8mmstertile_3,Whole Foods Market Mental Market Share Tertiles
+RS8mmstertile_4,Sprouts Farmers Market Mental Market Share Tertiles
+RS8mmstertile_5,Trader Joe's Mental Market Share Tertiles
+RS8mmstertile_6,Publix Mental Market Share Tertiles
+RS8mmstertile_7,Wegmans Mental Market Share Tertiles
+RS8mmstertile_8,Walmart Mental Market Share Tertiles
+RS8mmstertile_9,Target Mental Market Share Tertiles
+RS8mmstertile_10,Aldi Mental Market Share Tertiles
+RS8mmstertile_11,Costco Mental Market Share Tertiles
+RS8mmstertile_12,Kroger Mental Market Share Tertiles
+RS8mmstertile_13,Albertsons Mental Market Share Tertiles
+RS8mmstertile_14,Sam's Club Mental Market Share Tertiles
+RS8ditertile_1,Doing my regular weekly grocery shopping Derived Importance Tertiles
+RS8ditertile_2,Hosting guests or preparing for a special meal Derived Importance Tertiles
+RS8ditertile_3,Planning meals and realizing I'm low on supplies Derived Importance Tertiles
+RS8ditertile_4,Looking for healthy or better-quality food options Derived Importance Tertiles
+RS8ditertile_5,Buying ready-to-eat meals to save time Derived Importance Tertiles
+RS8ditertile_6,Trying to save money on groceries Derived Importance Tertiles
+RS8ditertile_7,Wanting to try new or seasonal products Derived Importance Tertiles
+RS8ditertile_8,Avoiding crowded stores or long lines Derived Importance Tertiles
+RS8ditertile_9,Shopping for a large family or group Derived Importance Tertiles
+RS8ditertile_10,Buying groceries online or for pickup Derived Importance Tertiles
+RS8ditertile_11,Needing help or ideas on what to buy Derived Importance Tertiles
+RS8ditertile_12,Looking for specialty or international foods Derived Importance Tertiles
+RS8ditertile_13,Feeling health-conscious and wanting to eat better Derived Importance Tertiles
+RS8ditertile_14,"Short on time but wanting convenient, good food Derived Importance Tertiles"
+RS8ditertile_15,Feeling inspired to cook or try something new Derived Importance Tertiles
+RS8ditertile_16,Choosing environmentally friendly grocery options Derived Importance Tertiles
+RS8ditertile_17,Running other errands and picking up groceries too Derived Importance Tertiles
+RS8mpen_1,Mental Penetration --- The Fresh Market
+RS8mpen_2,Mental Penetration --- Mom's Organic Market
+RS8mpen_3,Mental Penetration --- Whole Foods Market
+RS8mpen_4,Mental Penetration --- Sprouts Farmers Market
+RS8mpen_5,Mental Penetration --- Trader Joe's
+RS8mpen_6,Mental Penetration --- Publix
+RS8mpen_7,Mental Penetration --- Wegmans
+RS8mpen_8,Mental Penetration --- Walmart
+RS8mpen_9,Mental Penetration --- Target
+RS8mpen_10,Mental Penetration --- Aldi
+RS8mpen_11,Mental Penetration --- Costco
+RS8mpen_12,Mental Penetration --- Kroger
+RS8mpen_13,Mental Penetration --- Albertsons
+RS8mpen_14,Mental Penetration --- Sam's Club
+RS2_1,Imagine you were about to purchase groceries. Which grocery stores come to mind? Please list up to ten stores that first come to mind.
+RS2_2,Imagine you were about to purchase groceries. Which grocery stores come to mind? Please list up to ten stores that first come to mind.
+RS2_3,Imagine you were about to purchase groceries. Which grocery stores come to mind? Please list up to ten stores that first come to mind.
+RS2_4,Imagine you were about to purchase groceries. Which grocery stores come to mind? Please list up to ten stores that first come to mind.
+RS2_5,Imagine you were about to purchase groceries. Which grocery stores come to mind? Please list up to ten stores that first come to mind.
+RS2_6,Imagine you were about to purchase groceries. Which grocery stores come to mind? Please list up to ten stores that first come to mind.
+RS2_7,Imagine you were about to purchase groceries. Which grocery stores come to mind? Please list up to ten stores that first come to mind.
+RS2_8,Imagine you were about to purchase groceries. Which grocery stores come to mind? Please list up to ten stores that first come to mind.
+RS2_9,Imagine you were about to purchase groceries. Which grocery stores come to mind? Please list up to ten stores that first come to mind.
+RS2_10,Imagine you were about to purchase groceries. Which grocery stores come to mind? Please list up to ten stores that first come to mind.
+RS8ns_1,Network Size --- The Fresh Market
+RS8ns_1_buyer,Buyer Network Size --- The Fresh Market
+RS8ns_1_nb,Non-Buyer Network Size --- The Fresh Market
+RS8ns_2,Network Size --- Mom's Organic Market
+RS8ns_2_buyer,Buyer Network Size --- MOM's Organic Market
+RS8ns_2_nb,Non-Buyer Network Size --- MOM's Organic Market
+RS8ns_3,Network Size --- Whole Foods Market
+RS8ns_3_buyer,Buyer Network Size --- Whole Foods Market
+RS8ns_3_nb,Non-Buyer Network Size --- Whole Foods Market
+RS8ns_4,Network Size --- Sprouts Farmers Market
+RS8ns_4_buyer,Buyer Network Size --- Sprouts Farmers Market
+RS8ns_4_nb,Non-Buyer Network Size --- Sprouts Farmers Market
+RS8ns_5,Network Size --- Trader Joe's
+RS8ns_5_buyer,Buyer Network Size --- Trader Joe's
+RS8ns_5_nb,Non-Buyer Network Size --- Trader Joe's
+RS8ns_6,Network Size --- Publix
+RS8ns_6_buyer,Buyer Network Size --- Publix Super Markets
+RS8ns_6_nb,Non-Buyer Network Size --- Publix Super Markets
+RS8ns_7,Network Size --- Wegmans
+RS8ns_7_buyer,Buyer Network Size --- Wegmans
+RS8ns_7_nb,Non-Buyer Network Size --- Wegmans
+RS8ns_8,Network Size --- Walmart
+RS8ns_8_buyer,Buyer Network Size --- Walmart
+RS8ns_8_nb,Non-Buyer Network Size --- Walmart
+RS8ns_9,Network Size --- Target
+RS8ns_9_buyer,Buyer Network Size --- Target
+RS8ns_9_nb,Non-Buyer Network Size --- Target
+RS8ns_10,Network Size --- Aldi
+RS8ns_10_buyer,Buyer Network Size --- Aldi
+RS8ns_10_nb,Non-Buyer Network Size --- Aldi
+RS8ns_11,Network Size --- Costco
+RS8ns_11_buyer,Buyer Network Size --- Costco
+RS8ns_11_nb,Non-Buyer Network Size --- Costco
+RS8ns_12,Network Size --- Kroger
+RS8ns_12_buyer,Buyer Network Size --- Kroger
+RS8ns_12_nb,Non-Buyer Network Size --- Kroger
+RS8ns_13,Network Size --- Albertsons
+RS8ns_13_buyer,Buyer Network Size --- Albertsons
+RS8ns_13_nb,Non-Buyer Network Size --- Albertsons
+RS8ns_14,Network Size --- Sam's Club
+RS8ns_14_buyer,Buyer Network Size --- Sam's Club
+RS8ns_14_nb,Non-Buyer Network Size --- Sam's Club
