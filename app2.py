@@ -16,6 +16,10 @@ QUESTION_CODEBOOK_PATH = "2510110_research_science_question_codebook - 2510110_r
 # Household base used to scale proportions -> households (keep your 2023 base unless you have MSA HH base)
 HOUSEHOLD_BASE_DEFAULT = 70_132_819
 
+# MSA filter column: 1 = in TFM-present MSA universe
+MSA_FILTER_COL = "xdemAud1"
+MSA_FILTER_VALUE = 1
+
 # Monte Carlo defaults
 DEFAULT_N_SIMS = 800
 DEFAULT_CAP = 0.90
@@ -52,6 +56,18 @@ def load_data():
         pass
 
     return raw, levels_cb, question_cb
+
+
+def apply_msa_filter(raw: pd.DataFrame, use_msa_only: bool) -> pd.DataFrame:
+    """
+    Filters to TFM-present MSAs using xdemAud1 == 1.
+    Keeps all rows if use_msa_only is False.
+    """
+    if not use_msa_only:
+        return raw
+    if MSA_FILTER_COL not in raw.columns:
+        raise ValueError(f"MSA filter column not found. Expected '{MSA_FILTER_COL}' in raw data.")
+    return raw[raw[MSA_FILTER_COL] == MSA_FILTER_VALUE].copy()
 
 
 def discover_ceps(raw: pd.DataFrame):
@@ -103,8 +119,6 @@ def get_cep_labels(levels_cb: pd.DataFrame, question_cb: pd.DataFrame, cep_idx: 
         qc = question_cb.copy()
         qc.columns = [c.strip().lower() for c in qc.columns]
 
-        # We’ll attempt to use any columns that look like "qid"/"question"/"text"/"label"
-        # This code is intentionally defensive.
         possible_id_cols = [c for c in qc.columns if c in ("qid", "question", "variable", "var")]
         possible_text_cols = [c for c in qc.columns if c in ("text", "label", "questiontext", "question_text", "description")]
 
@@ -114,7 +128,6 @@ def get_cep_labels(levels_cb: pd.DataFrame, question_cb: pd.DataFrame, cep_idx: 
 
             for i in cep_idx:
                 if labels[i].startswith("CEP "):  # still fallback
-                    # try RS1_iNET label
                     hit = qc[qc[id_col].astype(str).str.upper() == f"RS1_{i}NET".upper()]
                     if len(hit) > 0:
                         candidate = str(hit.iloc[0][text_col]).strip()
@@ -218,35 +231,67 @@ and recomputes **deduped** reach. Multiple CEP uplifts naturally show **diminish
 """
     )
 
-    raw, levels_cb, question_cb = load_data()
+    raw_all, levels_cb, question_cb = load_data()
 
     # Validate required columns
-    if "wts" not in raw.columns:
+    if "wts" not in raw_all.columns:
         st.error("Missing required column: wts")
         return
 
-    w = raw["wts"].to_numpy()
+    # ----------------------------
+    # Universe controls (NEW)
+    # ----------------------------
+    st.sidebar.header("Universe controls")
+    use_msa_only = st.sidebar.checkbox(
+        f"Use TFM-present MSAs only ({MSA_FILTER_COL}=={MSA_FILTER_VALUE})",
+        value=True
+    )
+
+    # Apply MSA filter before all downstream calculations
+    try:
+        raw = apply_msa_filter(raw_all, use_msa_only)
+    except Exception as e:
+        st.error(str(e))
+        return
+
+    # Suggested HH base for selected universe = scale default HH base by weighted share in universe
+    w_all = raw_all["wts"].to_numpy()
+    w_sel = raw["wts"].to_numpy()
+
+    share_in_universe = float(w_sel.sum() / w_all.sum()) if w_all.sum() > 0 else 1.0
+    hh_base_suggested = int(round(HOUSEHOLD_BASE_DEFAULT * share_in_universe))
+
+    if use_msa_only:
+        st.success(f"Universe: TFM-present MSAs ({MSA_FILTER_COL}=={MSA_FILTER_VALUE})")
+    else:
+        st.info("Universe: Full sample")
+
+    st.sidebar.caption(
+        f"Weighted share in selected universe: **{share_in_universe:.1%}**. "
+        f"Suggested HH base: **{hh_base_suggested:,}** (scaled from {HOUSEHOLD_BASE_DEFAULT:,})."
+    )
+
+    # Now use the filtered weights for all calculations
+    w = w_sel
 
     # Discover CEPs (correct naming: RS8_{cep}_1NET)
     cep_idx = discover_ceps(raw)
     labels = get_cep_labels(levels_cb, question_cb, cep_idx)
     k = len(cep_idx)
 
-    st.caption(f"Detected **{k} CEPs** with both prevalence and TFM association data.")
+    st.caption(f"Detected **{k} CEPs** with both prevalence and TFM association data in the selected universe.")
 
-    # Build prevalence + association matrices
+    # Build prevalence + association matrices (FILTERED UNIVERSE)
     prev_cols = [f"RS1_{i}NET" for i in cep_idx]
     tfm_cols = [f"RS8_{i}_1NET" for i in cep_idx]
 
     prev = np.column_stack([to_binary_selected(raw[c]) for c in prev_cols])  # 0/1
     X = np.column_stack([to_binary_selected(raw[c]) for c in tfm_cols])      # 0/1
 
-    # Baselines
-    # Baseline deduped reach: prefer RS8mpen_1 if present, else compute from X
+    # Baselines (FILTERED UNIVERSE)
     if "RS8mpen_1" in raw.columns:
         mpen = to_binary_selected(raw["RS8mpen_1"])
         unique_reach_current = wmean(mpen, w)
-        # Also compute from X to validate
         mpen_from_x = (X.max(axis=1) > 0).astype(int)
         unique_reach_from_x = wmean(mpen_from_x, w)
     else:
@@ -259,7 +304,11 @@ and recomputes **deduped** reach. Multiple CEP uplifts naturally show **diminish
 
     # Sidebar controls
     st.sidebar.header("Simulation controls")
-    hh_base = st.sidebar.number_input("Household base (for scaling to HHs)", value=int(HOUSEHOLD_BASE_DEFAULT), step=100000)
+    hh_base = st.sidebar.number_input(
+        "Household base (for scaling to HHs)",
+        value=int(hh_base_suggested if use_msa_only else HOUSEHOLD_BASE_DEFAULT),
+        step=100000
+    )
     n_sims = st.sidebar.slider("Monte Carlo runs", 200, 3000, DEFAULT_N_SIMS, step=100)
     cap = st.sidebar.slider("Salience cap", 0.50, 0.95, DEFAULT_CAP, step=0.01)
 
@@ -270,7 +319,7 @@ and recomputes **deduped** reach. Multiple CEP uplifts naturally show **diminish
     order = np.argsort(-prevalence)
     ordered_idx = [cep_idx[i] for i in order]
 
-    for display_pos, cep in enumerate(ordered_idx):
+    for cep in ordered_idx:
         j = cep_idx.index(cep)  # map to matrix column index
         uplifts[j] = st.sidebar.slider(
             f"{labels[cep]} (current {salience_current[j]*100:.1f}%)",
@@ -378,4 +427,5 @@ and recomputes **deduped** reach. Multiple CEP uplifts naturally show **diminish
 
 if __name__ == "__main__":
     main()
+
 
