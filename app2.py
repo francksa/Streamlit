@@ -34,7 +34,7 @@ CEP_NAME_MAP = {
 }
 
 # ============================================================
-# 2. CORE ENGINE
+# 2. CALCULATION ENGINE
 # ============================================================
 
 def get_baselines(df):
@@ -47,10 +47,9 @@ def get_baselines(df):
     for i in range(1, 18):
         rs1_col, rs8_col = f"RS1_{i}NET", f"RS8_{i}_1NET"
         if rs1_col in df.columns and rs8_col in df.columns:
-            # Category Prevalence (Total Market in MSA)
+            # Category Prevalence (Total Market)
             cat_prev = np.sum((df[rs1_col] == 1) * w_total) / np.sum(w_total)
-            # Brand Salience (Among Aware in MSA)
-            # This is the calculation that will result in the 34.1% for Healthy Food
+            # Brand Salience (Among Aware) - This aligns with the 34.1% dashboard
             brand_sal = np.sum((df.loc[aware_mask, rs8_col] == 1) * w_aware) / np.sum(w_aware)
             
             results.append({"id": i, "label": CEP_NAME_MAP.get(i, f"CEP {i}"), 
@@ -84,34 +83,31 @@ def main():
     st.set_page_config(layout="wide", page_title="TFM MSA Simulator")
     st.title("TFM Mental Availability & TAM Simulator")
 
-    # --- AUTO-DETECT XLSX LOGIC ---
+    # --- ENCODING ROBUST LOAD LOGIC ---
     df = None
-    # Look for any Excel file in the directory containing 'TFM' and 'MSA'
-    files = [f for f in os.listdir('.') if f.endswith('.xlsx') and 'TFM' in f]
+    # Search for files containing TFM
+    files = [f for f in os.listdir('.') if f.endswith('.csv') and 'TFM' in f]
     
     if files:
         target_file = files[0]
         try:
-            # Using engine='openpyxl' for modern Excel files
-            df = pd.read_excel(target_file, engine='openpyxl')
-            st.sidebar.success(f"Auto-loaded Excel: {target_file}")
-        except Exception as e:
-            st.sidebar.error(f"Error loading {target_file}: {e}")
+            # 'utf-8-sig' is the safest for Mac Excel CSVs
+            df = pd.read_csv(target_file, encoding='utf-8-sig', low_memory=False)
+            st.sidebar.success(f"Loaded: {target_file}")
+        except UnicodeDecodeError:
+            # Fallback for Windows-formatted CSVs
+            df = pd.read_csv(target_file, encoding='latin1', low_memory=False)
+            st.sidebar.warning(f"Loaded {target_file} with legacy encoding.")
 
-    # Fallback to uploader if no file found or failed to load
     if df is None:
-        uploaded_file = st.sidebar.file_uploader("Upload TFM MSA XLSX", type="xlsx")
+        uploaded_file = st.sidebar.file_uploader("Upload CSV", type="csv")
         if uploaded_file:
-            df = pd.read_excel(uploaded_file, engine='openpyxl')
+            df = pd.read_csv(uploaded_file, encoding='utf-8-sig', low_memory=False)
         else:
-            st.info("Please place your XLSX file (e.g., TFM_RAW_MSA.xlsx) in the app directory.")
+            st.info("Please save your XLSX as a CSV and place it in the folder.")
             st.stop()
 
     # --- PROCESS DATA ---
-    if AWARE_COL not in df.columns:
-        st.error(f"Column '{AWARE_COL}' not found. Check that the Excel file contains Brand Awareness data.")
-        st.stop()
-
     cep_df = get_baselines(df)
     w_total = df[WEIGHT_COL].to_numpy()
     
@@ -122,14 +118,14 @@ def main():
         X[:, j] = (df[f"RS8_{int(row['id'])}_1NET"] == 1).astype(int).to_numpy()
         elig[:, j] = aware_mask
 
-    # Sidebar Sliders
+    # Sidebar
     st.sidebar.header("Salience Uplift (Aware Base %)")
     uplifts = []
     for idx, row in cep_df.sort_values("prevalence", ascending=False).iterrows():
         val = st.sidebar.slider(f"{row['label']} (Base: {row['salience']:.1%})", 0, 40, 0, key=f"s_{row['id']}")
         uplifts.append((row['id'], val))
     
-    # Run Simulation Math
+    # Run Simulation
     u_array = np.array([u[1] for u in sorted(uplifts, key=lambda x: x[0])])
     current_reach = np.sum((X.max(axis=1) > 0) * w_total) / np.sum(w_total)
     scenario_reach, target_sal = simulate_reach(X, elig, w_total, cep_df['salience'].values, u_array)
@@ -140,7 +136,7 @@ def main():
     k2.metric("Scenario Reach", f"{scenario_reach:.1%}", f"{(scenario_reach - current_reach):+.1%}")
     k3.metric("New Households Gained", f"{(scenario_reach - current_reach) * HOUSEHOLD_BASE_TFM_STATES:,.0f}")
 
-    # Charts
+    # Visualizations
     st.subheader("Bubble Matrix: Growth Trail")
     chart_df = cep_df.copy()
     chart_df['Scenario'] = target_sal
