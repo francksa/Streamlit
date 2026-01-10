@@ -8,8 +8,8 @@ import altair as alt
 # ============================================================
 # 1. DATA PATHS (Matches your uploaded files)
 # ============================================================
-RAW_DATA_FILE = "TFM_RAW_MSA.xlsx - TFM_RAW_MSA.csv"
-DASHBOARD_EXPORT = "Category Entry Points (CEPs).xlsx - Category Entry Points (CEPs).csv"
+RAW_DATA_FILE = "TFM_RAW_MSA.csv"
+DASHBOARD_EXPORT = "Category Entry Points (CEPs).xlsx"
 
 HOUSEHOLD_BASE_TFM_STATES = 70_132_819 
 WEIGHT_COL = "wts"
