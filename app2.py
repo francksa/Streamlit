@@ -1,19 +1,18 @@
 import re
-from pathlib import Path
+import os
 import numpy as np
 import pandas as pd
 import streamlit as st
 import altair as alt
+from pathlib import Path
 
 # ============================================================
 # 1. CONFIGURATION
 # ============================================================
-RAW_DATA_FILE = "TFM_RAW_MSA.xlsx"
+# Global Scaling Constant
 HOUSEHOLD_BASE_TFM_STATES = 70_132_819 
 WEIGHT_COL = "wts"
-
-# Potential names for the Awareness column in the raw data
-AWARE_CANDIDATES = ["RS3_1NET", "RS3_1", "S2_1", "S2_1NET"]
+AWARE_COL = "RS3_1NET" 
 
 CEP_NAME_MAP = {
     1: "Doing my regular weekly grocery shopping",
@@ -36,12 +35,12 @@ CEP_NAME_MAP = {
 }
 
 # ============================================================
-# 2. CALCULATION ENGINE
+# 2. CORE ENGINE
 # ============================================================
 
-def get_baselines(df, aware_col):
+def get_baselines(df):
     """Calculates weighted salience ONLY for those Aware of TFM."""
-    aware_mask = (df[aware_col] == 1)
+    aware_mask = (df[AWARE_COL] == 1)
     w_total = df[WEIGHT_COL].to_numpy()
     w_aware = df.loc[aware_mask, WEIGHT_COL].to_numpy()
     
@@ -71,7 +70,6 @@ def simulate_reach(X, elig, wts, current_sal, uplifts, n_sims=800):
     for _ in range(n_sims):
         X_sim = X.copy()
         U = rng.random((n, k))
-        # Flip only Aware respondents who don't currently associate
         flips = elig & (X_sim == 0) & (U < flip_prob)
         X_sim[flips] = 1
         sim_mpen.append(np.sum((X_sim.max(axis=1) > 0) * wts) / np.sum(wts))
@@ -79,43 +77,56 @@ def simulate_reach(X, elig, wts, current_sal, uplifts, n_sims=800):
     return float(np.mean(sim_mpen)), target_sal
 
 # ============================================================
-# 3. APP INTERFACE
+# 3. STREAMLIT UI
 # ============================================================
 
 def main():
-    st.set_page_config(layout="wide", page_title="TFM Simulator")
+    st.set_page_config(layout="wide", page_title="TFM MSA Simulator")
     st.title("TFM Mental Availability & TAM Simulator")
 
-    # FIX: Robust loading with encoding='latin1' to avoid Unicode errors
-    if not Path(RAW_DATA_FILE).exists():
-        st.error(f"Please ensure {RAW_DATA_FILE} is in the same folder as this script.")
-        st.stop()
+    # --- AUTO-DETECT FILE LOGIC ---
+    df = None
+    # Look for any CSV file in the current directory that fits the TFM pattern
+    files = [f for f in os.listdir('.') if f.endswith('.csv') and 'TFM' in f]
     
-    df = pd.read_csv(RAW_DATA_FILE, encoding='latin1', low_memory=False)
-    
-    # Locate Awareness Column
-    aware_col = next((c for c in AWARE_CANDIDATES if c in df.columns), None)
-    if not aware_col:
-        st.error("Could not find Awareness column (RS3_1NET). Check column names in CSV.")
+    if files:
+        target_file = files[0] # Take the first matching file
+        try:
+            df = pd.read_csv(target_file, encoding='latin1', low_memory=False)
+            st.sidebar.success(f"Auto-loaded: {target_file}")
+        except Exception as e:
+            st.sidebar.error(f"Error loading {target_file}: {e}")
+
+    # Fallback to uploader if no file found
+    if df is None:
+        uploaded_file = st.sidebar.file_uploader("Upload TFM MSA CSV", type="csv")
+        if uploaded_file:
+            df = pd.read_csv(uploaded_file, encoding='latin1', low_memory=False)
+        else:
+            st.info("Please upload the MSA CSV or place it in the app directory.")
+            st.stop()
+
+    # --- PROCESS DATA ---
+    if AWARE_COL not in df.columns:
+        st.error(f"Could not find Awareness column ({AWARE_COL}). Check column names.")
         st.stop()
-        
-    cep_df = get_baselines(df, aware_col)
+
+    cep_df = get_baselines(df)
     w_total = df[WEIGHT_COL].to_numpy()
     
-    # Prep matrices for Monte Carlo
     n, k = len(df), len(cep_df)
     X, elig = np.zeros((n, k), dtype=int), np.zeros((n, k), dtype=bool)
-    aware_mask = (df[aware_col] == 1).to_numpy()
+    aware_mask = (df[AWARE_COL] == 1).to_numpy()
     for j, (idx, row) in enumerate(cep_df.iterrows()):
         X[:, j] = (df[f"RS8_{int(row['id'])}_1NET"] == 1).astype(int).to_numpy()
         elig[:, j] = aware_mask
 
-    # Sidebar Sliders
+    # Sidebar
     st.sidebar.header("Salience Uplift (Aware Base %)")
-    st.sidebar.markdown(f"**Baseline Base:** Aware respondents in MSA using column `{aware_col}`.")
     uplifts = []
+    # Order by prevalence for the UI
     for idx, row in cep_df.sort_values("prevalence", ascending=False).iterrows():
-        val = st.sidebar.slider(f"{row['label']} (Base: {row['salience']:.1%})", 0, 40, 0, key=f"c_{row['id']}")
+        val = st.sidebar.slider(f"{row['label']} (Base: {row['salience']:.1%})", 0, 40, 0, key=f"s_{row['id']}")
         uplifts.append((row['id'], val))
     
     # Run Math
@@ -129,7 +140,7 @@ def main():
     k2.metric("Scenario Reach", f"{scenario_reach:.1%}", f"{(scenario_reach - current_reach):+.1%}")
     k3.metric("New Households Gained", f"{(scenario_reach - current_reach) * HOUSEHOLD_BASE_TFM_STATES:,.0f}")
 
-    # Visualizations
+    # Charts & Tables
     st.subheader("Bubble Matrix: Growth Trail")
     chart_df = cep_df.copy()
     chart_df['Scenario'] = target_sal
