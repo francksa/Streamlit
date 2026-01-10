@@ -17,7 +17,7 @@ HOUSEHOLD_BASE_TFM_STATES = 70_132_819
 MSA_FILTER_COL = "xdemAud1"
 MSA_FILTER_VALUE = 1
 WEIGHT_COL = "wts"
-AWARE_COL = "RS3_1"  # Correcting the anchor for Brand Awareness
+AWARE_COL = "RS3_1NET"  # Verified anchor for Brand Awareness
 
 DEFAULT_N_SIMS = 800
 DEFAULT_CAP = 0.90
@@ -148,7 +148,7 @@ def main():
 
     st.markdown("""
     **Brand Awareness Logic Applied:**
-    - Baselines are calculated using **Brand Awareness (RS3_1)** as the denominator.
+    - Baselines are calculated using **Brand Awareness (RS3_1NET)** as the denominator.
     """)
 
     st.sidebar.header("Data inputs")
@@ -202,7 +202,8 @@ def main():
         "CEP": [labels[i] for i in cep_idx],
         "CEP Type": [infer_cep_type(labels[i]) for i in cep_idx],
         "Category salience (wtd %)": prevalence_w * 100,
-        "TFM salience (wtd %)": salience_w * 100,
+        "TFM salience (Current %)": salience_w * 100,
+        "TFM salience (Scenario %)": salience_target_w * 100,
         "Uplift (pts)": uplifts,
         "Accessible TAM (HHs)": prevalence_w * hh_base,
     }).sort_values("Category salience (wtd %)", ascending=False)
@@ -210,16 +211,35 @@ def main():
     st.subheader("CEP Metrics (Dashboard Aligned)")
     st.dataframe(df, use_container_width=True)
 
-    # Bubble Chart
-    st.subheader("Bubble Matrix")
-    bubble = alt.Chart(df).mark_circle(opacity=0.75).encode(
+    # --- BUBBLE MATRIX WITH SCENARIO TRAIL ---
+    st.subheader("Bubble Matrix: Current vs Scenario")
+    
+    # 1. Base bubbles (Current)
+    current_layer = alt.Chart(df).mark_circle(opacity=0.7, stroke="black", strokeWidth=1).encode(
         x=alt.X("Category salience (wtd %)", title="Category Prevalence (%)"),
-        y=alt.Y("TFM salience (wtd %)", title="TFM Brand Salience (%)"),
+        y=alt.Y("TFM salience (Current %)", title="TFM Brand Salience (%)"),
         size=alt.Size("Accessible TAM (HHs)", scale=alt.Scale(range=[120, 3000])),
         color=alt.Color("CEP Type"),
-        tooltip=["CEP", "TFM salience (wtd %)", "Accessible TAM (HHs)"]
-    ).properties(height=500)
-    st.altair_chart(bubble, use_container_width=True)
+        tooltip=["CEP", "TFM salience (Current %)", "Accessible TAM (HHs)"]
+    )
+
+    # 2. Scenario bubbles (Target)
+    scenario_layer = alt.Chart(df).mark_circle(opacity=0.3, strokeDash=[2,2]).encode(
+        x=alt.X("Category salience (wtd %)"),
+        y=alt.Y("TFM salience (Scenario %)"),
+        size=alt.Size("Accessible TAM (HHs)", legend=None),
+        color=alt.Color("CEP Type", legend=None)
+    )
+
+    # 3. Connection Lines (Uplift Trail)
+    lines = alt.Chart(df).mark_rule(color="gray", strokeDash=[4,4], opacity=0.5).encode(
+        x=alt.X("Category salience (wtd %)"),
+        y=alt.Y("TFM salience (Current %)"),
+        y2=alt.Y2("TFM salience (Scenario %)")
+    )
+
+    final_chart = (lines + current_layer + scenario_layer).properties(height=600)
+    st.altair_chart(final_chart, use_container_width=True)
 
 if __name__ == "__main__":
     main()
