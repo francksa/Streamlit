@@ -34,11 +34,10 @@ CEP_NAME_MAP = {
 }
 
 # ============================================================
-# 2. CALCULATION ENGINE
+# 2. CORE ENGINE
 # ============================================================
 
 def get_baselines(df):
-    """Calculates weighted salience ONLY for those Aware of TFM."""
     aware_mask = (df[AWARE_COL] == 1)
     w_total = df[WEIGHT_COL].to_numpy()
     w_aware = df.loc[aware_mask, WEIGHT_COL].to_numpy()
@@ -49,11 +48,13 @@ def get_baselines(df):
         if rs1_col in df.columns and rs8_col in df.columns:
             # Category Prevalence (Total Market)
             cat_prev = np.sum((df[rs1_col] == 1) * w_total) / np.sum(w_total)
-            # Brand Salience (Among Aware) - This aligns with the 34.1% dashboard
-            brand_sal = np.sum((df.loc[aware_mask, rs8_col] == 1) * w_aware) / np.sum(w_aware)
+            # Brand Salience (Among Aware)
+            # Fix: Ensure no division by zero if aware base is 0
+            denom = np.sum(w_aware)
+            brand_sal = np.sum((df.loc[aware_mask, rs8_col] == 1) * w_aware) / denom if denom > 0 else 0
             
             results.append({"id": i, "label": CEP_NAME_MAP.get(i, f"CEP {i}"), 
-                            "prevalence": cat_prev, "salience": brand_sal})
+                            "prevalence": float(cat_prev), "salience": float(brand_sal)})
     return pd.DataFrame(results)
 
 def simulate_reach(X, elig, wts, current_sal, uplifts, n_sims=800):
@@ -85,19 +86,15 @@ def main():
 
     # --- ENCODING ROBUST LOAD LOGIC ---
     df = None
-    # Search for files containing TFM
     files = [f for f in os.listdir('.') if f.endswith('.csv') and 'TFM' in f]
     
     if files:
         target_file = files[0]
         try:
-            # 'utf-8-sig' is the safest for Mac Excel CSVs
             df = pd.read_csv(target_file, encoding='utf-8-sig', low_memory=False)
             st.sidebar.success(f"Loaded: {target_file}")
-        except UnicodeDecodeError:
-            # Fallback for Windows-formatted CSVs
+        except Exception:
             df = pd.read_csv(target_file, encoding='latin1', low_memory=False)
-            st.sidebar.warning(f"Loaded {target_file} with legacy encoding.")
 
     if df is None:
         uploaded_file = st.sidebar.file_uploader("Upload CSV", type="csv")
@@ -108,12 +105,16 @@ def main():
             st.stop()
 
     # --- PROCESS DATA ---
+    # Ensure weight col is numeric and handle NaNs
+    df[WEIGHT_COL] = pd.to_numeric(df[WEIGHT_COL], errors='coerce').fillna(0)
+    
     cep_df = get_baselines(df)
     w_total = df[WEIGHT_COL].to_numpy()
     
     n, k = len(df), len(cep_df)
     X, elig = np.zeros((n, k), dtype=int), np.zeros((n, k), dtype=bool)
     aware_mask = (df[AWARE_COL] == 1).to_numpy()
+    
     for j, (idx, row) in enumerate(cep_df.iterrows()):
         X[:, j] = (df[f"RS8_{int(row['id'])}_1NET"] == 1).astype(int).to_numpy()
         elig[:, j] = aware_mask
@@ -142,6 +143,10 @@ def main():
     chart_df['Scenario'] = target_sal
     chart_df = chart_df.rename(columns={'salience': 'Current', 'prevalence': 'Prevalence'})
 
+    # --- FIX: Ensure numeric types before chart/table ---
+    for col in ['Current', 'Prevalence', 'Scenario']:
+        chart_df[col] = pd.to_numeric(chart_df[col], errors='coerce').fillna(0)
+
     base = alt.Chart(chart_df).encode(x=alt.X("Prevalence", axis=alt.Axis(format='%'), title="Category Prevalence"))
     trail = base.mark_rule(strokeDash=[4,4], color="gray", opacity=0.4).encode(
         y=alt.Y("Current", axis=alt.Axis(format='%'), title="Salience (Aware Base)"),
@@ -152,8 +157,16 @@ def main():
     )
     st.altair_chart((trail + points).properties(height=500), use_container_width=True)
 
+    # --- FIX: Safe Dataframe Formatting ---
     st.subheader("CEP Performance Detail")
-    st.dataframe(chart_df[['label', 'Prevalence', 'Current', 'Scenario']].style.format(precision=1, formatter="{:.1%}"), use_container_width=True)
+    # We apply the formatting to a copy of the dataframe to avoid the Styler error
+    display_df = chart_df[['label', 'Prevalence', 'Current', 'Scenario']].copy()
+    
+    # Format numeric columns as strings manually to prevent Styler ValueErrors
+    for col in ['Prevalence', 'Current', 'Scenario']:
+        display_df[col] = display_df[col].apply(lambda x: f"{x:.1%}")
+        
+    st.dataframe(display_df, use_container_width=True)
 
 if __name__ == "__main__":
     main()
