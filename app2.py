@@ -9,7 +9,7 @@ import altair as alt
 # CONFIGURATION
 # ============================================================
 # Using the specific MSA-filtered file you provided
-RAW_DATA_FILE = "TFM_RAW_MSA.xlsx - TFM_RAW_MSA.csv"
+RAW_DATA_FILE = "TFM_RAW_MSA.xlsx"
 
 HOUSEHOLD_BASE_TFM_STATES = 70_132_819 
 WEIGHT_COL = "wts"
