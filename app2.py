@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import altair as alt
-from pathlib import Path
 
 # ============================================================
 # 1. CONFIGURATION
@@ -38,6 +37,7 @@ CEP_NAME_MAP = {
 # ============================================================
 
 def get_baselines(df):
+    # Filter for Aware respondents only for the Salience calculation
     aware_mask = (df[AWARE_COL] == 1)
     w_total = df[WEIGHT_COL].to_numpy()
     w_aware = df.loc[aware_mask, WEIGHT_COL].to_numpy()
@@ -46,106 +46,114 @@ def get_baselines(df):
     for i in range(1, 18):
         rs1_col, rs8_col = f"RS1_{i}NET", f"RS8_{i}_1NET"
         if rs1_col in df.columns and rs8_col in df.columns:
-            # Category Prevalence (Total Market)
-            cat_prev = np.sum((df[rs1_col] == 1) * w_total) / np.sum(w_total)
-            # Brand Salience (Among Aware)
-            # Fix: Ensure no division by zero if aware base is 0
-            denom = np.sum(w_aware)
-            brand_sal = np.sum((df.loc[aware_mask, rs8_col] == 1) * w_aware) / denom if denom > 0 else 0
+            # Category Prevalence (Denominator = Total MSA)
+            cat_binary = (df[rs1_col] == 1).astype(int).to_numpy()
+            cat_prev = np.sum(cat_binary * w_total) / np.sum(w_total)
             
-            results.append({"id": i, "label": CEP_NAME_MAP.get(i, f"CEP {i}"), 
-                            "prevalence": float(cat_prev), "salience": float(brand_sal)})
+            # Brand Salience (Denominator = Aware Base)
+            # This should produce the 34.1% for CEP 6
+            sal_binary_aware = (df.loc[aware_mask, rs8_col] == 1).astype(int).to_numpy()
+            brand_sal = np.sum(sal_binary_aware * w_aware) / np.sum(w_aware) if len(w_aware) > 0 else 0
+            
+            results.append({
+                "id": i, 
+                "label": CEP_NAME_MAP.get(i, f"CEP {i}"), 
+                "prevalence": float(cat_prev), 
+                "salience": float(brand_sal)
+            })
     return pd.DataFrame(results)
 
-def simulate_reach(X, elig, wts, current_sal, uplifts, n_sims=800):
+def simulate_unique_reach(X, elig, wts, current_sal, uplifts, n_sims=800):
     rng = np.random.default_rng(7)
     target_sal = np.minimum(current_sal + (uplifts / 100.0), 0.95)
     
+    # Flip Probability only applies to those who are AWARE but NOT CURRENTLY associating
     denom = (1.0 - current_sal)
     need = (target_sal - current_sal)
     flip_prob = np.where(denom > 0, need / denom, 0.0)
     
     n, k = X.shape
-    sim_mpen = []
+    sim_mpens = []
     for _ in range(n_sims):
         X_sim = X.copy()
         U = rng.random((n, k))
+        # Logic: Eligible (Aware) AND not yet associated AND roll < probability
         flips = elig & (X_sim == 0) & (U < flip_prob)
         X_sim[flips] = 1
-        sim_mpen.append(np.sum((X_sim.max(axis=1) > 0) * wts) / np.sum(wts))
-    
-    return float(np.mean(sim_mpen)), target_sal
+        # Calculate Unique Reach: (At least one 1 in the row)
+        unique_reach = (X_sim.max(axis=1) > 0).astype(int)
+        sim_mpens.append(np.sum(unique_reach * wts) / np.sum(wts))
+        
+    return float(np.mean(sim_mpens)), target_sal
 
 # ============================================================
-# 3. STREAMLIT UI
+# 3. INTERFACE
 # ============================================================
 
 def main():
-    st.set_page_config(layout="wide", page_title="TFM MSA Simulator")
-    st.title("TFM Mental Availability & TAM Simulator")
+    st.set_page_config(layout="wide", page_title="TFM Aligned Simulator")
+    st.title("TFM Mental Availability Simulator")
+    st.markdown("### Dashboard Alignment: Awareness-Based Salience")
 
-    # --- ENCODING ROBUST LOAD LOGIC ---
+    # Dynamic File Loading
     df = None
     files = [f for f in os.listdir('.') if f.endswith('.csv') and 'TFM' in f]
     
     if files:
-        target_file = files[0]
         try:
-            df = pd.read_csv(target_file, encoding='utf-8-sig', low_memory=False)
-            st.sidebar.success(f"Loaded: {target_file}")
-        except Exception:
-            df = pd.read_csv(target_file, encoding='latin1', low_memory=False)
+            # Use utf-8-sig for Mac Excel compatibility
+            df = pd.read_csv(files[0], encoding='utf-8-sig', low_memory=False)
+            st.sidebar.success(f"Loaded: {files[0]}")
+        except:
+            df = pd.read_csv(files[0], encoding='latin1', low_memory=False)
 
     if df is None:
-        uploaded_file = st.sidebar.file_uploader("Upload CSV", type="csv")
-        if uploaded_file:
-            df = pd.read_csv(uploaded_file, encoding='utf-8-sig', low_memory=False)
-        else:
-            st.info("Please save your XLSX as a CSV and place it in the folder.")
-            st.stop()
+        st.error("No CSV found. Please place 'TFM_RAW_MSA.csv' in the folder.")
+        st.stop()
 
-    # --- PROCESS DATA ---
-    # Ensure weight col is numeric and handle NaNs
+    # Clean data (Fixes ValueError)
     df[WEIGHT_COL] = pd.to_numeric(df[WEIGHT_COL], errors='coerce').fillna(0)
-    
+    df[AWARE_COL] = pd.to_numeric(df[AWARE_COL], errors='coerce').fillna(0)
+
+    # Calculate Baselines
     cep_df = get_baselines(df)
     w_total = df[WEIGHT_COL].to_numpy()
     
+    # Prep Matrices
     n, k = len(df), len(cep_df)
-    X, elig = np.zeros((n, k), dtype=int), np.zeros((n, k), dtype=bool)
+    X = np.zeros((n, k), dtype=int)
+    elig = np.zeros((n, k), dtype=bool)
     aware_mask = (df[AWARE_COL] == 1).to_numpy()
     
     for j, (idx, row) in enumerate(cep_df.iterrows()):
-        X[:, j] = (df[f"RS8_{int(row['id'])}_1NET"] == 1).astype(int).to_numpy()
+        col_name = f"RS8_{int(row['id'])}_1NET"
+        X[:, j] = (df[col_name] == 1).astype(int).to_numpy()
         elig[:, j] = aware_mask
 
     # Sidebar
     st.sidebar.header("Salience Uplift (Aware Base %)")
     uplifts = []
+    # Display in order of Category Prevalence
     for idx, row in cep_df.sort_values("prevalence", ascending=False).iterrows():
         val = st.sidebar.slider(f"{row['label']} (Base: {row['salience']:.1%})", 0, 40, 0, key=f"s_{row['id']}")
         uplifts.append((row['id'], val))
     
     # Run Simulation
-    u_array = np.array([u[1] for u in sorted(uplifts, key=lambda x: x[0])])
+    ordered_uplifts = np.array([u[1] for u in sorted(uplifts, key=lambda x: x[0])])
     current_reach = np.sum((X.max(axis=1) > 0) * w_total) / np.sum(w_total)
-    scenario_reach, target_sal = simulate_reach(X, elig, w_total, cep_df['salience'].values, u_array)
+    scenario_reach, target_sal = simulate_unique_reach(X, elig, w_total, cep_df['salience'].values, ordered_uplifts)
 
-    # KPIs
-    k1, k2, k3 = st.columns(3)
-    k1.metric("Current Market Penetration", f"{current_reach:.1%}")
-    k2.metric("Scenario Reach", f"{scenario_reach:.1%}", f"{(scenario_reach - current_reach):+.1%}")
-    k3.metric("New Households Gained", f"{(scenario_reach - current_reach) * HOUSEHOLD_BASE_TFM_STATES:,.0f}")
+    # Metrics
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Current Market Penetration", f"{current_reach:.1%}")
+    c2.metric("Scenario Reach", f"{scenario_reach:.1%}", f"{(scenario_reach - current_reach):+.1%}")
+    c3.metric("New Households Gained", f"{(scenario_reach - current_reach) * HOUSEHOLD_BASE_TFM_STATES:,.0f}")
 
-    # Visualizations
+    # Trail Chart
     st.subheader("Bubble Matrix: Growth Trail")
     chart_df = cep_df.copy()
     chart_df['Scenario'] = target_sal
     chart_df = chart_df.rename(columns={'salience': 'Current', 'prevalence': 'Prevalence'})
-
-    # --- FIX: Ensure numeric types before chart/table ---
-    for col in ['Current', 'Prevalence', 'Scenario']:
-        chart_df[col] = pd.to_numeric(chart_df[col], errors='coerce').fillna(0)
 
     base = alt.Chart(chart_df).encode(x=alt.X("Prevalence", axis=alt.Axis(format='%'), title="Category Prevalence"))
     trail = base.mark_rule(strokeDash=[4,4], color="gray", opacity=0.4).encode(
@@ -157,16 +165,12 @@ def main():
     )
     st.altair_chart((trail + points).properties(height=500), use_container_width=True)
 
-    # --- FIX: Safe Dataframe Formatting ---
+    # Data Table
     st.subheader("CEP Performance Detail")
-    # We apply the formatting to a copy of the dataframe to avoid the Styler error
-    display_df = chart_df[['label', 'Prevalence', 'Current', 'Scenario']].copy()
-    
-    # Format numeric columns as strings manually to prevent Styler ValueErrors
+    table_df = chart_df[['label', 'Prevalence', 'Current', 'Scenario']].copy()
     for col in ['Prevalence', 'Current', 'Scenario']:
-        display_df[col] = display_df[col].apply(lambda x: f"{x:.1%}")
-        
-    st.dataframe(display_df, use_container_width=True)
+        table_df[col] = table_df[col].apply(lambda x: f"{x:.1%}")
+    st.dataframe(table_df, use_container_width=True)
 
 if __name__ == "__main__":
     main()
