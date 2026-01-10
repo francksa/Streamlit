@@ -8,170 +8,154 @@ import altair as alt
 # ============================================================
 # 1. CONFIGURATION
 # ============================================================
-RAW_DATA_DEFAULT_NAMES = [
-    "2510110_research_science_raw_data (1).csv",
-    "2510110_research_science_raw_data.csv",
-]
-
-HOUSEHOLD_BASE_TFM_STATES = 70_132_819
+RAW_DATA_FILE = "2510110_research_science_raw_data (1).csv"
+HOUSEHOLD_BASE_TFM_STATES = 70_132_819 # Total TAM
 MSA_FILTER_COL = "xdemAud1"
 MSA_FILTER_VALUE = 1
 WEIGHT_COL = "wts"
-AWARE_COL = "RS3_1NET" 
-
-DEFAULT_N_SIMS = 800
-DEFAULT_CAP = 0.95
-APP_DIR = Path(__file__).parent
+AWARE_COL = "RS3_1NET" # TFM Awareness
 
 CEP_NAME_MAP = {
-    1: "Doing my regular weekly grocery shopping",
+    1: "Weekly grocery shopping",
     2: "Trying to save money on groceries",
-    3: "Planning meals and realizing I'm low on supplies",
-    4: "Running other errands and picking up groceries too",
-    5: "Feeling inspired to cook or try something new",
-    6: "Looking for healthy or better-quality food options",
-    7: "Avoiding crowded stores or long lines",
-    8: "Buying ready-to-eat meals to save time",
-    9: "Buying groceries online or for pickup",
-    10: "Wanting to try new or seasonal products",
-    11: "Feeling health-conscious and wanting to eat better",
-    12: "Short on time but wanting convenient, good food",
-    13: "Hosting guests or preparing for a special meal",
-    14: "Shopping for a large family or group",
-    15: "Looking for specialty or international foods",
-    16: "Choosing environmentally friendly grocery options",
-    17: "Needing help or ideas on what to buy",
+    3: "Planning meals / low on supplies",
+    4: "Running other errands",
+    5: "Inspired to cook / try something new",
+    6: "Healthy / better-quality options",
+    7: "Avoiding crowded stores",
+    8: "Ready-to-eat meals",
+    9: "Online / pickup shopping",
+    10: "New or seasonal products",
+    11: "Health-conscious / eat better",
+    12: "Convenient, good food",
+    13: "Special meal / hosting",
+    14: "Large family / group",
+    15: "Specialty / international foods",
+    16: "Eco-friendly options",
+    17: "Help or ideas",
 }
 
 # ============================================================
-# 2. HELPER FUNCTIONS
+# 2. CALCULATION ENGINE
 # ============================================================
 
-def wmean(x, wts):
-    return float(np.sum(x * wts) / np.sum(wts))
-
-def weighted_brand_salience(rs8_series, aware_series, wts):
-    aware_mask = (aware_series == 1).to_numpy()
-    if aware_mask.sum() == 0:
-        return 0.0
-    success = (rs8_series == 1).astype(int).to_numpy()
-    return float(np.sum(success[aware_mask] * wts[aware_mask]) / np.sum(wts[aware_mask]))
-
-def discover_valid_ceps(df):
-    """Only returns CEP IDs that have both RS1 and RS8_brand1 columns."""
-    valid_ids = []
-    for i in range(1, 20): # Checking range 1-19
-        rs1 = f"RS1_{i}NET"
-        rs8 = f"RS8_{i}_1NET"
-        if rs1 in df.columns and rs8 in df.columns:
-            valid_ids.append(i)
-    return valid_ids
-
-def simulate_unique_reach(X, elig, wts, salience_current_w, uplifts_pts, n_sims, cap):
-    rng = np.random.default_rng(7)
-    uplift = uplifts_pts / 100.0
-    s_target = np.minimum(salience_current_w + uplift, cap)
+def get_msa_baselines(df):
+    """Calculates salience % ONLY for MSA respondents who are Aware of TFM."""
+    # Filter for MSA and Weights
+    msa_df = df[df[MSA_FILTER_COL] == MSA_FILTER_VALUE].copy()
+    w = msa_df[WEIGHT_COL].to_numpy()
     
-    denom = (1.0 - salience_current_w)
-    need = (s_target - salience_current_w)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        flip_prob = np.where(denom > 1e-9, need / denom, 0.0)
-    flip_prob = np.clip(flip_prob, 0.0, 1.0)
+    # Calculate Awareness in MSA
+    aware_mask = (msa_df[AWARE_COL] == 1).to_numpy()
+    
+    cep_results = []
+    for i in range(1, 18):
+        rs1_col = f"RS1_{i}NET"
+        rs8_col = f"RS8_{i}_1NET"
+        
+        if rs1_col in msa_df.columns and rs8_col in msa_df.columns:
+            # Category Prevalence (Total Market in MSA)
+            cat_prev = np.sum((msa_df[rs1_col] == 1) * w) / np.sum(w)
+            
+            # Brand Salience (Among Aware in MSA)
+            brand_sal = 0.0
+            if aware_mask.sum() > 0:
+                brand_sal = np.sum((msa_df[rs8_col] == 1) * w[aware_mask]) / np.sum(w[aware_mask])
+            
+            cep_results.append({
+                "id": i,
+                "label": CEP_NAME_MAP.get(i, f"CEP {i}"),
+                "prevalence": cat_prev,
+                "salience": brand_sal
+            })
+    return pd.DataFrame(cep_results), msa_df
+
+def simulate_unique_reach(X, elig, wts, current_sal, uplifts, n_sims=800):
+    rng = np.random.default_rng(7)
+    target_sal = np.minimum(current_sal + (uplifts / 100.0), 0.95)
+    
+    # Calculate flip probability per person
+    denom = (1.0 - current_sal)
+    need = (target_sal - current_sal)
+    flip_prob = np.where(denom > 0, need / denom, 0.0)
     
     n, k = X.shape
-    reach_dist = np.zeros(n_sims, dtype=float)
-    for t in range(n_sims):
+    results = []
+    for _ in range(n_sims):
         X_sim = X.copy()
         U = rng.random((n, k))
+        # Flip if Aware, not currently associating, and random check passes
         flips = elig & (X_sim == 0) & (U < flip_prob)
         X_sim[flips] = 1
-        mpen_sim = (X_sim.max(axis=1) > 0).astype(int)
-        reach_dist[t] = wmean(mpen_sim, wts)
-    return float(reach_dist.mean()), s_target
+        results.append(np.sum((X_sim.max(axis=1) > 0) * wts) / np.sum(wts))
+    
+    return float(np.mean(results)), target_sal
 
 # ============================================================
-# 3. MAIN APP
+# 3. STREAMLIT UI
 # ============================================================
 
 def main():
-    st.set_page_config(page_title="TFM Simulator", layout="wide")
-    st.title("TFM Mental Availability & TAM Simulator")
+    st.set_page_config(layout="wide", page_title="TFM MSA Simulator")
+    st.title("TFM Mental Availability Simulator (MSA Filtered)")
 
-    # Auto-load File
-    raw_all = None
-    for name in RAW_DATA_DEFAULT_NAMES:
-        p = APP_DIR / name
-        if p.exists():
-            raw_all = pd.read_csv(p, low_memory=False)
-            break
-
-    if raw_all is None:
-        st.error("Data file not found. Please ensure the CSV is in the app folder.")
+    # Load Data
+    try:
+        df_raw = pd.read_csv(RAW_DATA_FILE, low_memory=False)
+    except FileNotFoundError:
+        st.error(f"Could not find {RAW_DATA_FILE}. Please ensure it is in the script folder.")
         st.stop()
 
-    # Apply MSA Filter
-    raw = raw_all[raw_all[MSA_FILTER_COL] == MSA_FILTER_VALUE].copy()
-    wts = raw[WEIGHT_COL].to_numpy()
-
-    # Find valid CEPs (fixes the KeyError)
-    cep_idx = discover_valid_ceps(raw)
+    # Get MSA specific baselines
+    cep_df, msa_raw = get_msa_baselines(df_raw)
+    wts = msa_raw[WEIGHT_COL].to_numpy()
     
-    # Calculate Metrics (Awareness Base)
-    salience_w = np.array([weighted_brand_salience(raw[f"RS8_{i}_1NET"], raw[AWARE_COL], wts) for i in cep_idx])
-    prevalence_w = np.array([wmean((raw[f"RS1_{i}NET"] == 1).astype(int).to_numpy(), wts) for i in cep_idx])
-
-    # Simulation Setup
-    n, k = len(raw), len(cep_idx)
+    # Setup Simulation Matrices
+    n, k = len(msa_raw), len(cep_df)
     X = np.zeros((n, k), dtype=int)
     elig = np.zeros((n, k), dtype=bool)
-    aware_mask = (raw[AWARE_COL] == 1).to_numpy()
-    for j, i in enumerate(cep_idx):
-        X[:, j] = (raw[f"RS8_{i}_1NET"] == 1).astype(int).to_numpy()
+    aware_mask = (msa_raw[AWARE_COL] == 1).to_numpy()
+    
+    for j, row in cep_df.iterrows():
+        X[:, j] = (msa_raw[f"RS8_{int(row['id'])}_1NET"] == 1).astype(int).to_numpy()
         elig[:, j] = aware_mask
 
-    # Sidebar
-    st.sidebar.header("Salience Uplift (Aware Base %)")
-    uplifts = np.zeros(k)
-    order = np.argsort(-prevalence_w)
-    for j in order:
-        label = CEP_NAME_MAP.get(cep_idx[j], f"CEP {cep_idx[j]}")
-        uplifts[j] = st.sidebar.slider(f"{label} (Baseline: {salience_w[j]*100:.1f}%)", 0, 50, 0)
+    # Sidebar Sliders
+    st.sidebar.header("Salience Uplift (MSA Aware %)")
+    st.sidebar.info("Baselines below are filtered for TFM MSAs and Brand Awareness.")
+    uplifts = []
+    for idx, row in cep_df.sort_values("prevalence", ascending=False).iterrows():
+        val = st.sidebar.slider(
+            f"{row['label']} (Baseline: {row['salience']:.1%})",
+            0, 30, 0, key=f"s_{row['id']}"
+        )
+        uplifts.append(val)
 
-    # Simulation
-    reach_scenario, target_salience = simulate_unique_reach(X, elig, wts, salience_w, uplifts, DEFAULT_N_SIMS, DEFAULT_CAP)
-    current_reach = wmean((X.max(axis=1) > 0).astype(int), wts)
+    # Run Simulation
+    current_reach = np.sum((X.max(axis=1) > 0) * wts) / np.sum(wts)
+    scenario_reach, target_sal = simulate_unique_reach(X, elig, wts, cep_df['salience'].values, np.array(uplifts))
 
     # Metrics
     c1, c2, c3 = st.columns(3)
-    c1.metric("Current Mental Penetration", f"{current_reach:.1%}")
-    c2.metric("Scenario Reach", f"{reach_scenario:.1%}", f"{(reach_scenario - current_reach):.1%}")
-    c3.metric("New Households Gained", f"{(reach_scenario - current_reach) * HOUSEHOLD_BASE_TFM_STATES:,.0f}")
+    c1.metric("Market Mental Penetration", f"{current_reach:.1%}")
+    c2.metric("Scenario Reach", f"{scenario_reach:.1%}", f"{(scenario_reach - current_reach):.1%}")
+    c3.metric("New Households Gained", f"{(scenario_reach - current_reach) * HOUSEHOLD_BASE_TFM_STATES:,.0f}")
 
     # Results Table
-    df = pd.DataFrame({
-        "CEP": [CEP_NAME_MAP.get(i, f"CEP {i}") for i in cep_idx],
-        "Category Prevalence %": prevalence_w * 100,
-        "Current Brand Salience %": salience_w * 100,
-        "Scenario Brand Salience %": target_salience * 100,
-        "Uplift (pts)": uplifts,
-    }).sort_values("Category Prevalence %", ascending=False)
-    
-    st.subheader("CEP Performance Metrics (MSA Respondents)")
-    st.dataframe(df, use_container_width=True)
+    results_df = cep_df.copy()
+    results_df['Uplift'] = uplifts
+    results_df['Scenario Salience'] = target_sal
+    st.subheader("MSA CEP Performance")
+    st.dataframe(results_df[['label', 'prevalence', 'salience', 'Scenario Salience']], use_container_width=True)
 
-    # Bubble Chart
-    st.subheader("Bubble Matrix: Growth Trail")
-    base = alt.Chart(df).encode(x=alt.X("Category Prevalence %", title="Category Behavior Prevalence (%)"))
-    trail = base.mark_rule(color="gray", strokeDash=[4,4], opacity=0.4).encode(
-        y=alt.Y("Current Brand Salience %", title="TFM Salience among Aware (%)"),
-        y2="Scenario Brand Salience %"
-    )
-    points = base.mark_circle(opacity=0.8, stroke="black", strokeWidth=1).encode(
-        y="Current Brand Salience %",
-        size=alt.Value(400),
-        color=alt.value("#5b9244"),
-        tooltip=["CEP", "Current Brand Salience %", "Scenario Brand Salience %"]
-    )
+    # Chart
+    st.subheader("Salience Movement Trail")
+    chart_df = results_df.rename(columns={'salience': 'Current', 'Scenario Salience': 'Scenario', 'prevalence': 'Category Prevalence'})
+    
+    base = alt.Chart(chart_df).encode(x=alt.X("Category Prevalence", axis=alt.Axis(format='%')))
+    trail = base.mark_rule(strokeDash=[4,4], color="gray").encode(y=alt.Y("Current", axis=alt.Axis(format='%')), y2="Scenario")
+    points = base.mark_circle(size=200, color="#5b9244").encode(y="Current", tooltip=['label', 'Current', 'Scenario'])
+    
     st.altair_chart((trail + points).properties(height=500), use_container_width=True)
 
 if __name__ == "__main__":
