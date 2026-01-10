@@ -41,6 +41,7 @@ CEP_NAME_MAP = {
 # ============================================================
 
 def clean_numeric(val):
+    """Handles percentages, decimals, and string formatting."""
     if pd.isna(val): return 0.0
     if isinstance(val, (int, float)): return float(val)
     s = str(val).strip().replace(',', '')
@@ -48,35 +49,41 @@ def clean_numeric(val):
     s = s.replace('%', '')
     try:
         f = float(s)
-        return f / 100.0 if (has_pct or f > 1.0) else f
+        # Handle cases where 48% is exported as 48 (integers) vs 0.48
+        if has_pct or f > 1.0:
+            return f / 100.0
+        return f
     except ValueError:
         return 0.0
 
 def load_and_align_data():
     if not Path(DASHBOARD_EXPORT).exists() or not Path(RAW_DATA_FILE).exists():
-        st.error("CSVs not found in the directory!")
+        st.error(f"Missing Files! App needs `{DASHBOARD_EXPORT}` and `{RAW_DATA_FILE}`.")
         st.stop()
 
-    # Load Files
-    dash_df = pd.read_csv(DASHBOARD_EXPORT, encoding='utf-8-sig')
-    raw_df = pd.read_csv(RAW_DATA_FILE, encoding='utf-8-sig', low_memory=False)
+    # Load with flexible encoding for Mac/Windows
+    try:
+        dash_df = pd.read_csv(DASHBOARD_EXPORT, encoding='utf-8-sig')
+        raw_df = pd.read_csv(RAW_DATA_FILE, encoding='utf-8-sig', low_memory=False)
+    except:
+        dash_df = pd.read_csv(DASHBOARD_EXPORT, encoding='latin1')
+        raw_df = pd.read_csv(RAW_DATA_FILE, encoding='latin1', low_memory=False)
+
     raw_df[WEIGHT_COL] = pd.to_numeric(raw_df[WEIGHT_COL], errors='coerce').fillna(0.0)
 
-    # Find Sections in Dashboard CSV
-    cat_start, brand_start = 0, 0
-    for i, val in enumerate(dash_df.iloc[:, 0]):
-        text = str(val)
-        if "Overall CEP Salience" in text: cat_start = i
-        if "Your Brand's CEP Salience" in text: brand_start = i
+    # Split dashboard into Overall vs Brand sections
+    # Your export has overall prevalence first, then brand salience later
+    text_col = dash_df.iloc[:, 0].astype(str)
+    brand_start = text_col.str.contains("Your Brand's CEP Salience", case=False, na=False).idxmax()
     
-    cat_section = dash_df.iloc[cat_start:brand_start]
+    cat_section = dash_df.iloc[:brand_start]
     brand_section = dash_df.iloc[brand_start:]
 
     baselines = []
     for cid, label in CEP_NAME_MAP.items():
-        # Get Prevalence from the "Overall" section (Matches your Purple Bars)
+        # Get Prevalence from the first half of the file
         cat_match = cat_section[cat_section.iloc[:, 0].str.contains(label, na=False, case=False)]
-        # Get Salience from the "Your Brand" section
+        # Get Salience from the second half
         brand_match = brand_section[brand_section.iloc[:, 0].str.contains(label, na=False, case=False)]
         
         if not cat_match.empty and not brand_match.empty:
@@ -90,7 +97,7 @@ def load_and_align_data():
     return pd.DataFrame(baselines), raw_df
 
 # ============================================================
-# 3. HOUSEHOLD IMPACT ENGINE
+# 3. MONTE CARLO ENGINE
 # ============================================================
 
 def run_hh_simulation(raw_df, cep_df, uplifts, n_sims=800):
@@ -98,75 +105,78 @@ def run_hh_simulation(raw_df, cep_df, uplifts, n_sims=800):
     wts = raw_df[WEIGHT_COL].to_numpy()
     n, k = len(raw_df), len(cep_df)
     
+    # Association Matrix
     X = np.zeros((n, k), dtype=int)
     elig = (raw_df[AWARE_COL] == 1).to_numpy() 
     
     curr_s = cep_df['salience'].values
     target_s = np.minimum(curr_s + (uplifts / 100.0), 0.95)
     
+    # Fill baseline from raw respondent data
     for j, cid in enumerate(cep_df['id']):
         X[:, j] = (raw_df[f"RS8_{cid}_1NET"] == 1).astype(int).to_numpy()
 
-    # Calculation for flip probability
+    # P(flip) logic
     denom = (1.0 - curr_s)
     need = (target_s - curr_s)
     flip_probs = np.where(denom > 0, need / denom, 0.0)
 
     curr_mpen = np.sum((X.max(axis=1) > 0) * wts) / np.sum(wts)
 
-    sim_mpens = []
+    sim_results = []
     for _ in range(n_sims):
         X_sim = X.copy()
         U = rng.random((n, k))
+        # Flip logic: Aware, currently 0, wins random roll
         flips = (X_sim == 0) & (elig[:, None]) & (U < flip_probs)
         X_sim[flips] = 1
-        sim_mpens.append(np.sum((X_sim.max(axis=1) > 0) * wts) / np.sum(wts))
+        sim_results.append(np.sum((X_sim.max(axis=1) > 0) * wts) / np.sum(wts))
         
-    return curr_mpen, float(np.mean(sim_mpens)), target_s
+    return curr_mpen, float(np.mean(sim_results)), target_s
 
 # ============================================================
-# 4. UI
+# 4. APP UI
 # ============================================================
 
 def main():
-    st.set_page_config(layout="wide", page_title="TFM HH Growth Simulator")
-    st.title("TFM Household Growth Simulator")
-    st.caption("Now aligned: Prevalence and Salience pulled directly from Dashboard Export.")
+    st.set_page_config(layout="wide", page_title="TFM HH Simulator")
+    st.title("TFM Household Growth & Mental Availability Simulator")
 
     cep_df, raw_df = load_and_align_data()
 
-    # Sidebar
-    st.sidebar.header("Salience Strategy (pts Uplift)")
-    uplifts = []
-    for idx, row in cep_df.sort_values("prevalence", ascending=False).iterrows():
-        val = st.sidebar.slider(f"{row['label']} (Base: {row['salience']:.1%})", 0, 30, 0, key=f"s_{row['id']}")
-        uplifts.append((row['id'], val))
+    # Sidebar Sliders
+    st.sidebar.header("Salience Uplift (pts)")
+    uplifts_input = []
+    # Key fix: sorting by "prevalence" which is now guaranteed to exist in cep_df
+    sorted_ceps = cep_df.sort_values("prevalence", ascending=False)
     
-    # Simulation
-    u_array = np.array([u[1] for u in sorted(uplifts, key=lambda x: x[0])])
+    for idx, row in sorted_ceps.iterrows():
+        val = st.sidebar.slider(f"{row['label']} (Base: {row['salience']:.1%})", 0, 30, 0, key=f"s_{row['id']}")
+        uplifts_input.append((row['id'], val))
+    
+    # Simulation execution
+    u_array = np.array([u[1] for u in sorted(uplifts_input, key=lambda x: x[0])])
     curr_mpen, scen_mpen, target_saliences = run_hh_simulation(raw_df, cep_df, u_array)
     
-    # HH Metrics
+    # HH Growth Math
     curr_hhs = curr_mpen * HH_UNIVERSE
     scen_hhs = scen_mpen * HH_UNIVERSE
     new_hhs = scen_hhs - curr_hhs
 
-    # Display
+    # Metrics Row
     st.subheader("Simulated Market Impact")
     m1, m2, m3 = st.columns(3)
     m1.metric("Current Households", f"{curr_hhs:,.0f}")
     m2.metric("Scenario Total Households", f"{scen_hhs:,.0f}")
     m3.metric("Incremental HHs Gained", f"{new_hhs:,.0f}", delta_color="normal")
 
-    
-
     # Chart
-    st.subheader("Growth Matrix: Salience vs Prevalence")
+    st.subheader("Mental Availability Growth Matrix")
     chart_df = cep_df.copy()
     chart_df['Scenario'] = target_saliences
     chart_df = chart_df.rename(columns={'salience': 'Current', 'prevalence': 'Prevalence'})
     
-    base = alt.Chart(chart_df).encode(x=alt.X("Prevalence", axis=alt.Axis(format='%'), title="Behavior Prevalence (Purple Bars)"))
+    base = alt.Chart(chart_df).encode(x=alt.X("Prevalence", axis=alt.Axis(format='%'), title="Category Prevalence (Purple Bars)"))
     trail = base.mark_rule(strokeDash=[4,4], color="gray").encode(y="Current", y2="Scenario")
     points = base.mark_circle(size=400, color="#5b9244", stroke="white", strokeWidth=1).encode(
         y=alt.Y("Current", axis=alt.Axis(format='%'), title="Salience (Aware Base)"),
@@ -174,8 +184,8 @@ def main():
     )
     st.altair_chart((trail + points).properties(height=500), use_container_width=True)
 
-    # Table
-    st.subheader("CEP Strategic Alignment Detail")
+    # Detailed Results Table
+    st.subheader("CEP Performance Detail")
     table_df = chart_df[['label', 'Prevalence', 'Current', 'Scenario']].copy()
     for col in ['Prevalence', 'Current', 'Scenario']:
         table_df[col] = table_df[col].apply(lambda x: f"{x:.1%}")
