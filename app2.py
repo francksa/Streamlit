@@ -17,7 +17,7 @@ HOUSEHOLD_BASE_TFM_STATES = 70_132_819
 MSA_FILTER_COL = "xdemAud1"
 MSA_FILTER_VALUE = 1
 WEIGHT_COL = "wts"
-AWARE_COL = "RS3_1NET"  # Verified anchor for Brand Awareness
+AWARE_COL = "RS3_1NET"  # Brand Awareness Column
 
 DEFAULT_N_SIMS = 800
 DEFAULT_CAP = 0.90
@@ -100,11 +100,16 @@ def weighted_category_prevalence(rs1_series: pd.Series, w: np.ndarray) -> float:
     x = (rs1_series == 1).astype(int).to_numpy()
     return wmean(x, w)
 
+# --- UPDATED: Salience is now % of Brand Aware respondents ---
 def weighted_brand_salience(rs8_series: pd.Series, aware_series: pd.Series, w: np.ndarray) -> float:
+    """
+    Calculates weighted % selecting TFM ONLY among those aware of TFM.
+    """
     aware_mask = (aware_series == 1).to_numpy()
     if aware_mask.sum() == 0:
         return 0.0
     x = (rs8_series == 1).astype(int).to_numpy()
+    # Denominator is sum of weights of AWARE people, Numerator is sum of weights of AWARE people who associated
     return float(np.sum(x[aware_mask] * w[aware_mask]) / np.sum(w[aware_mask]))
 
 def build_X_and_eligibility(raw: pd.DataFrame, aware_series: pd.Series, cep_idx: list[int]) -> tuple[np.ndarray, np.ndarray]:
@@ -115,7 +120,7 @@ def build_X_and_eligibility(raw: pd.DataFrame, aware_series: pd.Series, cep_idx:
     aware_mask = (aware_series == 1).to_numpy()
     for j, cep in enumerate(cep_idx):
         s = raw[f"RS8_{cep}_1NET"]
-        elig[:, j] = aware_mask 
+        elig[:, j] = aware_mask # Only people who are aware can 'flip' to having an association
         X[:, j] = (s == 1).astype(int).to_numpy()
     return X, elig
 
@@ -123,11 +128,14 @@ def simulate_unique_reach(X, elig, w, salience_current_w, uplifts_pts, n_sims, c
     rng = np.random.default_rng(seed)
     uplift = uplifts_pts / 100.0
     s_target = np.minimum(salience_current_w + uplift, cap)
+    
+    # Probability to flip is based on the remaining 'space' among aware people
     denom = (1.0 - salience_current_w)
     need = (s_target - salience_current_w)
     with np.errstate(divide="ignore", invalid="ignore"):
         flip_prob = np.where(denom > 1e-9, need / denom, 0.0)
     flip_prob = np.clip(flip_prob, 0.0, 1.0)
+    
     n, k = X.shape
     reach_dist = np.zeros(n_sims, dtype=float)
     for t in range(n_sims):
@@ -148,14 +156,15 @@ def main():
 
     st.markdown("""
     **Brand Awareness Logic Applied:**
-    - Baselines are calculated using **Brand Awareness (RS3_1NET)** as the denominator.
+    - Baseline values are now shown as **% of Aware Respondents** (to match your tracker).
+    - Market Penetration calculations still scale to the **Total Market**.
     """)
 
     st.sidebar.header("Data inputs")
     raw_all = load_csv_from_repo_or_upload("Raw data CSV", RAW_DATA_DEFAULT_NAMES)
     
     if AWARE_COL not in raw_all.columns:
-        st.error(f"Awareness column '{AWARE_COL}' not found. Please check your data.")
+        st.error(f"Awareness column '{AWARE_COL}' not found.")
         st.stop()
 
     st.sidebar.header("Universe controls")
@@ -166,6 +175,7 @@ def main():
     cep_idx = discover_ceps(raw)
     labels = {i: CEP_NAME_MAP.get(i, f"CEP {i}") for i in cep_idx}
     
+    # Calculate using Awareness denominator
     prevalence_w = np.array([weighted_category_prevalence(raw[f"RS1_{cep}NET"], w) for cep in cep_idx])
     salience_w = np.array([weighted_brand_salience(raw[f"RS8_{cep}_1NET"], raw[AWARE_COL], w) for cep in cep_idx])
 
@@ -183,7 +193,8 @@ def main():
 
     for cep in ordered_ceps:
         j = cep_idx.index(cep)
-        uplifts[j] = st.sidebar.slider(f"{labels[cep]} (Current: {salience_w[j]*100:.1f}%)", 0, 25, 0)
+        # These labels will now show 34% etc. instead of 7.5%
+        uplifts[j] = st.sidebar.slider(f"{labels[cep]} (Current: {salience_w[j]*100:.1f}%)", 0, 50, 0)
 
     unique_reach_scenario_w, reach_dist_w, salience_target_w = simulate_unique_reach(
         X, elig, w, salience_w, uplifts, n_sims, DEFAULT_CAP
@@ -208,38 +219,34 @@ def main():
         "Accessible TAM (HHs)": prevalence_w * hh_base,
     }).sort_values("Category salience (wtd %)", ascending=False)
 
-    st.subheader("CEP Metrics (Dashboard Aligned)")
+    st.subheader("CEP Metrics (Based on Brand Aware respondents)")
     st.dataframe(df, use_container_width=True)
 
-    # --- BUBBLE MATRIX WITH SCENARIO TRAIL ---
+    # Bubble Matrix with trails
     st.subheader("Bubble Matrix: Current vs Scenario")
     
-    # 1. Base bubbles (Current)
     current_layer = alt.Chart(df).mark_circle(opacity=0.7, stroke="black", strokeWidth=1).encode(
         x=alt.X("Category salience (wtd %)", title="Category Prevalence (%)"),
-        y=alt.Y("TFM salience (Current %)", title="TFM Brand Salience (%)"),
+        y=alt.Y("TFM salience (Current %)", title="TFM Brand Salience among Aware (%)"),
         size=alt.Size("Accessible TAM (HHs)", scale=alt.Scale(range=[120, 3000])),
         color=alt.Color("CEP Type"),
         tooltip=["CEP", "TFM salience (Current %)", "Accessible TAM (HHs)"]
     )
 
-    # 2. Scenario bubbles (Target)
-    scenario_layer = alt.Chart(df).mark_circle(opacity=0.3, strokeDash=[2,2]).encode(
+    scenario_layer = alt.Chart(df).mark_circle(opacity=0.3).encode(
         x=alt.X("Category salience (wtd %)"),
         y=alt.Y("TFM salience (Scenario %)"),
         size=alt.Size("Accessible TAM (HHs)", legend=None),
         color=alt.Color("CEP Type", legend=None)
     )
 
-    # 3. Connection Lines (Uplift Trail)
     lines = alt.Chart(df).mark_rule(color="gray", strokeDash=[4,4], opacity=0.5).encode(
         x=alt.X("Category salience (wtd %)"),
         y=alt.Y("TFM salience (Current %)"),
         y2=alt.Y2("TFM salience (Scenario %)")
     )
 
-    final_chart = (lines + current_layer + scenario_layer).properties(height=600)
-    st.altair_chart(final_chart, use_container_width=True)
+    st.altair_chart((lines + current_layer + scenario_layer).properties(height=600), use_container_width=True)
 
 if __name__ == "__main__":
     main()
