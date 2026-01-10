@@ -12,10 +12,12 @@ HOUSEHOLD_BASE_TFM_STATES = 70_132_819
 MSA_FILTER_COL = "xdemAud1"
 MSA_FILTER_VALUE = 1
 WEIGHT_COL = "wts"
-AWARE_COL = "S2_1"  # Based on codebook: TFM Awareness
+
+# Common names for the Awareness column in TFM datasets
+AWARE_CANDIDATES = ["S2_1", "S2_1NET", "S2_Brand1", "Awareness_1"]
 
 # ============================================================
-# CEP NAME MAP
+# CEP NAME MAP (Updated for your Dashboard)
 # ============================================================
 CEP_NAME_MAP = {
     1: "Weekly grocery shopping",
@@ -23,52 +25,37 @@ CEP_NAME_MAP = {
     3: "Planning meals / supplies",
     4: "Errands + groceries",
     5: "Inspired to cook",
-    6: "Healthy / organic foods",
-    7: "Avoiding crowded stores",
-    8: "Ready-to-eat meals",
-    9: "Online / pickup shopping",
-    10: "Exploring new flavors",
-    11: "Better quality food",
+    6: "Exploring new flavors",
+    11: "Healthy / organic foods",
     12: "Quick / convenient meal",
-    13: "Special occasion",
-    14: "Shopping for many",
-    15: "Specialty / international",
-    16: "Eco-friendly options",
-    17: "Need help / ideas",
+    # Add others as needed to match your screenshot
 }
 
 # ============================================================
 # CORE MATH FUNCTIONS
 # ============================================================
 
-def wmean(x: np.ndarray, w: np.ndarray) -> float:
+def wmean(x, w):
     return float(np.sum(x * w) / np.sum(w))
 
-def weighted_brand_salience(rs8_series: pd.Series, aware_series: pd.Series, w: np.ndarray) -> float:
+def weighted_brand_salience(rs8_series, aware_series, w):
     """
-    ALIGNED TO DASHBOARD: Calculates salience among TOTAL BRAND AWARE respondents.
-    1 = Selected TFM, 2 = Not selected, NaN = Not selected/asked.
+    ALIGNED TO DASHBOARD: Base = Total Brand Aware respondents in MSA.
     """
+    # 1 = Aware, everything else is not
     aware_mask = (aware_series == 1).to_numpy()
     if aware_mask.sum() == 0:
         return 0.0
     
-    # Success is strictly when TFM (brand 1) was selected
+    # 1 = Selected TFM for CEP
     success = (rs8_series == 1).astype(int).to_numpy()
-    
-    # Weighted calculation among the Aware base
     return float(np.sum(success[aware_mask] * w[aware_mask]) / np.sum(w[aware_mask]))
 
 def simulate_unique_reach(X, elig, w, salience_current_w, uplifts_pts, n_sims, cap):
-    """
-    Monte Carlo Deduplication:
-    Calculates how many UNIQUE households are reached as associations grow.
-    """
     rng = np.random.default_rng(7)
     uplift = uplifts_pts / 100.0
     s_target = np.minimum(salience_current_w + uplift, cap)
 
-    # Probability of 'flipping' a non-associator to an associator
     denom = (1.0 - salience_current_w)
     need = (s_target - salience_current_w)
     with np.errstate(divide="ignore", invalid="ignore"):
@@ -81,10 +68,8 @@ def simulate_unique_reach(X, elig, w, salience_current_w, uplifts_pts, n_sims, c
     for t in range(n_sims):
         X_sim = X.copy()
         U = rng.random((n, k))
-        # Only flip if eligible, currently 0, and passes random check
         flips = elig & (X_sim == 0) & (U < flip_prob)
         X_sim[flips] = 1
-        # Unique Reach: Does the respondent have AT LEAST ONE association?
         mpen_sim = (X_sim.max(axis=1) > 0).astype(int)
         reach_dist[t] = wmean(mpen_sim, w)
 
@@ -94,9 +79,9 @@ def simulate_unique_reach(X, elig, w, salience_current_w, uplifts_pts, n_sims, c
 # STREAMLIT UI
 # ============================================================
 def main():
+    st.set_page_config(layout="wide")
     st.title("TFM Mental Availability & TAM Simulator")
 
-    # 1. Load Data
     uploaded_file = st.sidebar.file_uploader("Upload Raw Data CSV", type="csv")
     if uploaded_file is None:
         st.info("Please upload the raw data CSV to begin.")
@@ -104,70 +89,68 @@ def main():
     
     raw_all = pd.read_csv(uploaded_file, low_memory=False)
 
-    # 2. Filter for MSAs (Logic: xdemAud1 == 1)
-    use_msa_only = st.sidebar.checkbox("Filter: TFM-present MSAs only", value=True)
-    if use_msa_only:
-        raw = raw_all[raw_all[MSA_FILTER_COL] == MSA_FILTER_VALUE].copy()
-    else:
-        raw = raw_all.copy()
+    # --- Awareness Column Discovery ---
+    aware_col = next((c for c in AWARE_CANDIDATES if c in raw_all.columns), None)
+    if not aware_col:
+        st.error("Could not find Awareness column (S2_1). Please select it below:")
+        aware_col = st.selectbox("Select Awareness Column", options=raw_all.columns)
 
+    # --- MSA Filter ---
+    raw = raw_all[raw_all[MSA_FILTER_COL] == MSA_FILTER_VALUE].copy()
     w = raw[WEIGHT_COL].to_numpy()
     
-    # 3. Discover CEPs and Calculate Baselines
-    cep_idx = [int(re.match(r"RS8_(\d+)_1NET", c).group(1)) 
-               for c in raw.columns if re.match(r"RS8_(\d+)_1NET", c)]
-    cep_idx.sort()
+    # --- CEP Calculation ---
+    # Find all RS8 columns for Brand 1 (TFM)
+    rs8_cols = [c for c in raw.columns if re.match(r"RS8_(\d+)_1NET", c)]
+    cep_idx = sorted([int(re.search(r"RS8_(\d+)_1NET", c).group(1)) for c in rs8_cols])
 
-    # Fixed Salience: Base = Total Aware (S2_1)
+    # Calculate Weighted Salience among AWARE base
     salience_w = np.array([
-        weighted_brand_salience(raw[f"RS8_{cep}_1NET"], raw[AWARE_COL], w) 
+        weighted_brand_salience(raw[f"RS8_{cep}_1NET"], raw[aware_col], w) 
         for cep in cep_idx
     ])
 
-    # 4. Prepare Monte Carlo Inputs
-    # X = matrix of current associations; elig = anyone who is AWARE (eligible to associate)
-    n, k = len(raw), len(cep_idx)
-    X = np.zeros((n, k), dtype=int)
-    elig = np.zeros((n, k), dtype=bool)
+    # --- Simulation Setup ---
+    X = np.zeros((len(raw), len(cep_idx)), dtype=int)
+    elig = np.zeros((len(raw), len(cep_idx)), dtype=bool)
     for j, cep in enumerate(cep_idx):
         X[:, j] = (raw[f"RS8_{cep}_1NET"] == 1).astype(int).to_numpy()
-        elig[:, j] = (raw[AWARE_COL] == 1).to_numpy()
+        elig[:, j] = (raw[aware_col] == 1).to_numpy()
 
-    # 5. Sidebar Sliders
+    # --- Sidebar ---
     st.sidebar.header("Salience Uplift (Survey %)")
-    uplifts = np.zeros(k)
+    uplifts = np.zeros(len(cep_idx))
     for j, cep in enumerate(cep_idx):
-        label = CEP_NAME_MAP.get(cep, f"CEP {cep}")
-        # This will now show the ~7.1% baseline from your dashboard
+        name = CEP_NAME_MAP.get(cep, f"CEP {cep}")
+        # Logic check: 'Trying to save money' should now show ~7.1% as baseline
         uplifts[j] = st.sidebar.slider(
-            f"{label} (Baseline: {salience_w[j]*100:.1f}%)",
+            f"{name} (Baseline: {salience_w[j]*100:.1f}%)",
             0, 20, 0
         )
 
-    # 6. Run Simulation
-    n_sims = st.sidebar.select_slider("Monte Carlo Runs", options=[200, 500, 1000], value=500)
+    # --- Run & Display ---
+    n_sims = 500
     reach_scenario, target_salience = simulate_unique_reach(X, elig, w, salience_w, uplifts, n_sims, 0.9)
-
-    # 7. Display Results
-    # Current unique reach (un-simulated)
     current_reach = wmean((X.max(axis=1) > 0).astype(int), w)
     
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Market Mental Penetration", f"{current_reach:,.1%}")
-    col2.metric("Scenario Reach", f"{reach_scenario:,.1%}", f"{(reach_scenario - current_reach):.1%}")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Market Mental Penetration", f"{current_reach:,.1%}")
+    c2.metric("Scenario Reach", f"{reach_scenario:,.1%}", f"{(reach_scenario - current_reach):.1%}")
     
     gained_hh = (reach_scenario - current_reach) * HOUSEHOLD_BASE_TFM_STATES
-    col3.metric("New Households Gained", f"{max(0, gained_hh):,.0f}")
+    c3.metric("New Households Gained", f"{max(0, gained_hh):,.0f}")
 
-    # 8. Visualization
-    st.subheader("CEP Salience Growth (Weighted Survey %)")
-    chart_data = pd.DataFrame({
+    # --- Chart ---
+    chart_df = pd.DataFrame({
         "CEP": [CEP_NAME_MAP.get(c, f"CEP {c}") for c in cep_idx],
-        "Current": salience_w * 100,
-        "Scenario": target_salience * 100
-    }).sort_values("Current", ascending=False)
+        "Current %": salience_w * 100,
+        "Scenario %": target_salience * 100
+    }).sort_values("Current %", ascending=True)
 
-    st.bar_chart(chart_data.set_index("CEP"))
+    # Using horizontal bars to match the dashboard style
+    base = alt.Chart(chart_df).encode(y=alt.Y("CEP", sort='-x'))
+    bars = base.mark_bar(color="#5b9244").encode(x=alt.X("Current %", title="Salience %"))
+    st.altair_chart(bars, use_container_width=True)
 
 if __name__ == "__main__":
     main()
