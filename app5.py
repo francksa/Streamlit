@@ -277,7 +277,7 @@ def compute_phase1_table(
             "CEP": cep_df.loc[j, "label"],
             "CEP Type": cep_df.loc[j, "segment"],
             "Category prevalence (%)": prevalence * 100,
-            "TFM salience (%)": salience * 100,
+            "Grocery Chain salience (%)": salience * 100,
             "Accessible TAM (HHs)": accessible_tam,
             "Uncaptured TAM (HHs)": uncaptured_tam,
             "Incremental HHs per +1pt (deduped)": delta_hhs,
@@ -317,7 +317,7 @@ def compute_phase1_table(
 # 5) STREAMLIT UI
 # ============================================================
 def main():
-    st.set_page_config(layout="wide", page_title="Grocery Mental Availability Simulator (Deduped + Phase 1)")
+    st.set_page_config(layout="wide", page_title="Grocery Chain Mental Availability Simulator (Deduped + Phase 1)")
     st.title("Grocery Chain Household Growth & Mental Availability Simulator (Deduped) — with Phase 1 Opportunities")
 
     st.markdown(
@@ -325,7 +325,7 @@ def main():
 This simulator is anchored to your **dashboard export** for baseline CEP metrics, and uses the **MSA raw file**
 to simulate **deduped unique household reach** under salience uplifts.
 
-**Phase 1** adds a ranked “Top Opportunities” view based on incremental unique HH growth per +1pt salience.
+**Phase 1** adds a ranked "Top Opportunities" view based on incremental unique HH growth per +1pt salience.
 """
     )
 
@@ -350,7 +350,7 @@ to simulate **deduped unique household reach** under salience uplifts.
     )
 
     # Sliders ordered by prevalence (dashboard style)
-    st.sidebar.header("TFM Salience Uplift (pts)")
+    st.sidebar.header("Grocery Chain Salience Uplift (pts)")
     sorted_ceps = cep_df.sort_values("prevalence", ascending=False).reset_index(drop=True)
 
     uplifts_by_id = {}
@@ -418,9 +418,9 @@ to simulate **deduped unique household reach** under salience uplifts.
         "segment": "CEP Type",
         "prevalence_%": "Category prevalence (%)",
         "accessible_tam_hh": "Accessible TAM (HHs)",
-        "salience_%": "TFM salience – current (%)",
+        "salience_%": "Grocery Chain salience – current (%)",
         "uplift_pts": "Uplift (pts)",
-        "salience_scenario_%": "TFM salience – scenario (%)",
+        "salience_scenario_%": "Grocery Chain salience – scenario (%)",
     }).sort_values("Category prevalence (%)", ascending=False)
 
     st.dataframe(table_disp, use_container_width=True)
@@ -429,7 +429,7 @@ to simulate **deduped unique household reach** under salience uplifts.
     st.download_button(
         "Download CEP table as CSV",
         data=csv_bytes,
-        file_name="tfm_cep_simulator_output.csv",
+        file_name="grocery_chain_cep_simulator_output.csv",
         mime="text/csv"
     )
 
@@ -461,7 +461,7 @@ to simulate **deduped unique household reach** under salience uplifts.
     )
 
     x_med = float(chart_df["Category prevalence (%)"].median())
-    y_med = float(chart_df["TFM salience – scenario (%)"].median())
+    y_med = float(chart_df["Grocery Chain salience – scenario (%)"].median())
     vline = alt.Chart(pd.DataFrame({"x": [x_med]})).mark_rule(strokeDash=[4, 4]).encode(x="x")
     hline = alt.Chart(pd.DataFrame({"y": [y_med]})).mark_rule(strokeDash=[4, 4]).encode(y="y")
 
@@ -513,7 +513,7 @@ This ranks CEPs by *incremental unique HH growth leverage*, using:
     st.download_button(
         "Download Top Opportunities as CSV",
         data=top_csv,
-        file_name="tfm_top_opportunities_phase1.csv",
+        file_name="grocery_chain_top_opportunities_phase1.csv",
         mime="text/csv"
     )
 
